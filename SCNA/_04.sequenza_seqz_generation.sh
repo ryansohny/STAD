@@ -1,6 +1,6 @@
 source activate sequenza
 
-sequenza=/clinix1/Analysis/mongol/phenomata/Tools/anaconda3/envs/sequenza/bin/sequenza-utils
+sequenza=sequenza-utils
 
 ## input file format ==> Normalid on the first column tab separated wih Tumorid on the second column
 
