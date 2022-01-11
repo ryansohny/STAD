@@ -5,6 +5,7 @@ dmr = sc.AnnData(dmr)
 dmr.raw = dmr
 dmr.layers['Percent_met'] = dmr.X
 dmr.obs['TN'] = pd.DataFrame(['Normal']*84 + ['Tumor']*84, index=dmr.obs.index)
+##### 다른 clinical data 집어넣은다음에 umap leiden에 넣어서 봐볼것!
 
 sc.pp.scale(dmr)
 sc.tl.pca(dmr, n_comps=100, zero_center=True)
