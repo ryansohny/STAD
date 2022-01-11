@@ -22,4 +22,5 @@ sc.tl.umap(dmr, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, 
 sc.pl.umap(dmr, color='TN')
 
 
-sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=10) ################################################################ 이게 좋은 것 같
+sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=10) ################################################################ 이게 좋은 것 같음
+sc.tl.leiden(dmr, resolution=1.0, key_added='leiden_r1') ## 오우 이거 괜찮
