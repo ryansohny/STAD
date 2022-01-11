@@ -9,3 +9,17 @@ dmr.obs['TN'] = pd.DataFrame(['Normal']*84 + ['Tumor']*84, index=dmr.obs.index)
 sc.pp.scale(dmr)
 sc.tl.pca(dmr, n_comps=100, zero_center=True)
 sc.pl.pca(dmr, color='TN')
+#sc.pl.pca_variance_ratio(dmr, log=True)
+
+### Tests for varying degrees of n_neighbors needed ###
+sc.pp.neighbors(dmr, n_neighbors=3, n_pcs=6)
+sc.tl.umap(dmr, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
+
+sc.pp.neighbors(dmr, n_neighbors=15, n_pcs=6)
+sc.tl.umap(dmr, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
+
+
+sc.pl.umap(dmr, color='TN')
+
+
+sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=10) ################################################################ 이게 좋은 것 같
