@@ -27,6 +27,6 @@ sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=10) #################################
 sc.tl.leiden(dmr, resolution=1.0, key_added='leiden_r1') ## 오우 이거 괜찮
 
 
-
 # https://github.com/aertslab/pySCENIC/issues/357 이거랑
 # https://doi.org/10.1016/j.celrep.2018.10.045 이거 archiving 해놓을것!!
+# https://github.com/aertslab/pySCENIC/issues/136 이것도 archiving ==> pySCENIC on bulk RNA-seq DATA!!!!!!!!!!!!!
