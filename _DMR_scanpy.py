@@ -1,5 +1,13 @@
 import scanpy as sc
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.colors
+sc.settings.verbosity = 3
+plt.rcParams['figure.figsize'] = (5,5)
+cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffdab9", "#8b0a50"])
+%matplotlib
+
 dmr = pd.read_csv("DMR_mat_imputed.csv", index_col=0).iloc[:,:-1]
 dmr = sc.AnnData(dmr)
 dmr.raw = dmr
