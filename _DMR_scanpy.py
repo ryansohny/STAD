@@ -1,5 +1,6 @@
 import scanpy as sc
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.colors
@@ -18,7 +19,12 @@ dmr.obs['TN'] = pd.DataFrame(['Normal']*84 + ['Tumor']*84, index=dmr.obs.index)
 sc.pp.scale(dmr)
 sc.tl.pca(dmr, n_comps=100, zero_center=True)
 sc.pl.pca(dmr, color='TN')
+sc.pl.pca(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
 #sc.pl.pca_variance_ratio(dmr, log=True)
+pca_variance = pd.DataFrame(dmr.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,101)))), columns=['Variance_ratio'])
+np.sum(pca_variance.values.flatten()[:11])
+# 0.7016306 ==> PC1~11까지가 variance 70% 설명
+
 
 ### Tests for varying degrees of n_neighbors needed ###
 sc.pp.neighbors(dmr, n_neighbors=3, n_pcs=6)
@@ -31,9 +37,10 @@ sc.tl.umap(dmr, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, 
 sc.pl.umap(dmr, color='TN')
 
 
-sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=10) ################################################################ 이게 좋은 것 같음
+sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=11) ################################################################ 이게 좋은 것 같음
 sc.tl.leiden(dmr, resolution=1.0, key_added='leiden_r1') ## 오우 이거 괜찮
-
+sc.tl.umap(dmr, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
+sc.pl.umap(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
 
 # https://github.com/aertslab/pySCENIC/issues/357 이거랑 (Vascular Aging)
 # https://doi.org/10.1016/j.celrep.2018.10.045 이거 archiving 해놓을것!! (Vascular Aging)
