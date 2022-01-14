@@ -96,11 +96,13 @@ sc.pl.pca(rna, color='leiden_r1')
 # pca_variance_rna = pd.DataFrame(rna.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,84)))), columns=['Variance_ratio'])
 # np.sum(pca_variance_rna.values.flatten()[:25]) 
 
-sc.pp.neighbors(rna, n_neighbors=20, n_pcs=15)
+sc.pp.neighbors(rna, n_neighbors=15, n_pcs=18)
 sc.tl.leiden(rna, resolution=0.5, key_added='rna_leiden_r05')
+sc.tl.leiden(rna, resolution=0.6, key_added='rna_leiden_r06')
 sc.tl.leiden(rna, resolution=0.75, key_added='rna_leiden_r075')
 sc.tl.umap(rna, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
-sc.pl.umap(rna, color=['leiden_r1', 'rna_leiden_r05', 'rna_leiden_r075'], add_outline=False)
+sc.pl.umap(rna, color=['leiden_r1', 'rna_leiden_r05', 'rna_leiden_r06', 'rna_leiden_r075'], add_outline=False)
+
 
 
 
