@@ -1,7 +1,7 @@
 import scanpy as sc
 import pandas as pd
 import numpy as np
-import seaborn sns
+import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.colors
