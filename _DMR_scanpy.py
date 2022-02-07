@@ -38,7 +38,7 @@ sc.pl.umap(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue'
 
 ###### DMR table for tumor only
 dmr_t = sc.AnnData(pd.read_csv("DMR_mat_tumor_imputed.csv", index_col=0))
-dmr_t.raw = dmr
+dmr_t.raw = dmr_t
 dmr_t.layers['Percent_met'] = dmr_t.X
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2021_WC300_clinical_information_Xadded_new.csv', index_col='ID')
 clinic_info[['T.stage', 'N.stage', 'M.stage', 'TNM.stage', 'HER2IHC']] = clinic_info[['T.stage', 'N.stage', 'M.stage', 'TNM.stage', 'HER2IHC']].astype(str)
@@ -57,6 +57,13 @@ sc.tl.leiden(dmr_t, resolution=1.0, key_added='leiden_r1')
 sc.tl.umap(dmr_t, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
 sc.pl.umap(dmr_t, color='Lauren', add_outline=False)
 
+leiden_name_change_dict = {'4': 'leiden_A',
+                           '1': 'leiden_B',
+                           '0': 'leiden_C',
+                           '3': 'leiden_D',
+                           '2': 'leiden_E'}
+dmr_t.obs['DMR_leiden'] = dmr_t.obs['leiden_r1'].map(lambda x: leiden_name_change_dict[x]).astype('category')
+sc.pl.umap(dmr_t, color='DMR_leiden', add_outline=False, legend_loc='on data')
 
 df = dmr_t.obs[['WHO', 'leiden_r1']]
 pd.crosstab(df['WHO'], df['leiden_r1'], normalize=1).T.plot.bar(stacked=True)
