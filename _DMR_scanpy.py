@@ -30,7 +30,6 @@ np.sum(pca_variance.values.flatten()[:11])
 # 0.7016306 ==> PC1~11까지가 variance 70% 설명
 
 sc.pp.neighbors(dmr, n_neighbors=10, n_pcs=11)
-sc.tl.leiden(dmr_t, resolution=0.5, key_added='leiden_r05')
 sc.tl.leiden(dmr, resolution=1.0, key_added='leiden_r1')
 sc.tl.umap(dmr, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
 sc.pl.umap(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
@@ -55,25 +54,39 @@ sc.pl.pca(dmr_t, color='Lauren')
 
 sc.pp.neighbors(dmr_t, n_neighbors=15, n_pcs=12)
 sc.tl.leiden(dmr_t, resolution=1.0, key_added='leiden_r1')
+sc.tl.leiden(dmr_t, resolution=0.5, key_added='leiden_r05')
 sc.tl.umap(dmr_t, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
 sc.pl.umap(dmr_t, color='Lauren', add_outline=False)
 
-leiden_name_change_dict = {'4': 'leiden_A',
+leiden_name_change_dict1 = {'4': 'leiden_A',
                            '1': 'leiden_B',
                            '0': 'leiden_C',
                            '3': 'leiden_D',
                            '2': 'leiden_E'}
-dmr_t.obs['DMR_leiden'] = dmr_t.obs['leiden_r1'].map(lambda x: leiden_name_change_dict[x]).astype('category')
+leiden_name_change_dict2 = {'1': 'leiden_A',
+                           '0': 'leiden_B',
+                           '2': 'leiden_C'}
+
+dmr_t.obs['DMR_leiden'] = dmr_t.obs['leiden_r1'].map(lambda x: leiden_name_change_dict1[x]).astype('category')
+dmr_t.obs['DMR_leiden2'] = dmr_t.obs['leiden_r05'].map(lambda x: leiden_name_change_dict2[x]).astype('category')
 sc.pl.umap(dmr_t, color='DMR_leiden', add_outline=False, legend_loc='on data')
 
 lin = tuple(sorted(list(dmr_t.obs['DMR_leiden'].values.unique())))
 dmr_t.obs['DMR_leiden'] = dmr_t.obs['DMR_leiden'].cat.reorder_categories(list(lin), ordered=True)
 color_dict = {
-    "leiden_A": "#9467bd",
+    "leiden_A": "#fdbf6f",
     "leiden_B": "#ff7f0e",
     "leiden_C": "#1f77b4",
     "leiden_D": "#d62728",
     "leiden_E": '#2ca02c',
+}
+
+lin = tuple(sorted(list(dmr_t.obs['DMR_leiden2'].values.unique())))
+dmr_t.obs['DMR_leiden2'] = dmr_t.obs['DMR_leiden2'].cat.reorder_categories(list(lin), ordered=True)
+color_dict = {
+    "leiden_A": "#9467bd",
+    "leiden_B": "#a6cee3",
+    "leiden_C": "#b15928",
 }
 
 sns.boxplot(data=dmr_t.obs, x='DMR_leiden', y='EpiBurden', palette=color_dict)
@@ -88,6 +101,16 @@ plt.tight_layout()
 
 # DMR_leiden clusters and Lauren's classification
 ax = pd.crosstab(df['Lauren'], df['DMR_leiden'], normalize=1).T.plot.bar(stacked=True, color=dict(zip(dmr_t.obs['Lauren'].unique(), sns.color_palette("Accent", len(dmr_t.obs['Lauren'].unique())))))
+ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.0))
+plt.tight_layout()
+
+# DMR_leiden clusters2 and WHO classification
+ax = pd.crosstab(dmr_t.obs['WHO'], dmr_t.obs['DMR_leiden2'], normalize=1).T.plot.bar(stacked=True, color=dict(zip(dmr_t.obs['WHO'].unique(), sns.color_palette("Set2", len(dmr_t.obs['WHO'].unique())))))
+ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.0))
+plt.tight_layout()
+
+# DMR_leiden clusters2 and Lauren's classification
+ax = pd.crosstab(dmr_t.obs['Lauren'], dmr_t.obs['DMR_leiden2'], normalize=1).T.plot.bar(stacked=True, color=dict(zip(dmr_t.obs['Lauren'].unique(), sns.color_palette("Accent", len(dmr_t.obs['Lauren'].unique())))))
 ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.0))
 plt.tight_layout()
 
