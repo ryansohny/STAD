@@ -11,11 +11,11 @@ from gseapy.plot import barplot, dotplot
 deg = pd.read_csv("Tumor.Normal.compare.csv", index_col=0)
 deg_up_list, deg_down_list = list(), list()
 
-for i in deg[(deg.loc[:, 'baseMean'] >= 50) & (deg.loc[:,'log2FoldChange'] > 1) & (deg.loc[:, 'padj'] < 0.05)].index:
+for i in deg[(deg.loc[:, 'baseMean'] >= 10) & (deg.loc[:,'log2FoldChange'] > 1) & (deg.loc[:, 'padj'] < 0.05)].index:
 	deg_up_list.append(i)
 
 
-for i in deg[(deg.loc[:, 'baseMean'] >= 50) & (deg.loc[:,'log2FoldChange'] < -1) & (deg.loc[:, 'padj'] < 0.05)].index:
+for i in deg[(deg.loc[:, 'baseMean'] >= 10) & (deg.loc[:,'log2FoldChange'] < -1) & (deg.loc[:, 'padj'] < 0.05)].index:
 	deg_down_list.append(i)
 
 hallmark_up = gp.enrichr(gene_list=deg_up_list,
