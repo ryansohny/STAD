@@ -40,4 +40,34 @@ sns.violinplot(data=dnmt3a, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0,
 dnmt3b = pd.concat([pd.DataFrame(rna.loc[['DNMT3B']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(rna.loc[['DNMT3B']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(rna.columns[84:])
 sns.violinplot(data=dnmt3b, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count").set_title('DNMT3B')
 
+# Multiple DNMT
+dnmt1 = pd.concat([pd.DataFrame(rna.loc['DNMT1'].values, columns=['Expression']), pd.DataFrame(['DNMT1']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+dnmt3a = pd.concat([pd.DataFrame(rna.loc['DNMT3A'].values, columns=['Expression']), pd.DataFrame(['DNMT3A']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+dnmt3b = pd.concat([pd.DataFrame(rna.loc['DNMT3B'].values, columns=['Expression']), pd.DataFrame(['DNMT3B']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+dnmt = pd.concat([dnmt1, dnmt3a, dnmt3b], ignore_index=True)
+sns.violinplot(data=dnmt, x='DNMT', y='Expression', hue='TN', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+sns.stripplot(data=dnmt, x='DNMT', y='Expression', hue='TN', color=".3", size=3, dodge=True)
+
+# Multiple GATA
+gata5 = pd.concat([pd.DataFrame(rna.loc['GATA5'].values, columns=['Expression']), pd.DataFrame(['GATA5']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata6 = pd.concat([pd.DataFrame(rna.loc['GATA6'].values, columns=['Expression']), pd.DataFrame(['GATA6']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata4 = pd.concat([pd.DataFrame(rna.loc['GATA4'].values, columns=['Expression']), pd.DataFrame(['GATA4']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata2 = pd.concat([pd.DataFrame(rna.loc['GATA2'].values, columns=['Expression']), pd.DataFrame(['GATA2']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+
+gata = pd.concat([gata5, gata6, gata4, gata2], ignore_index=True)
+sns.violinplot(data=gata, x='GATA', y='Expression', hue='TN', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+sns.stripplot(data=gata, x='GATA', y='Expression', hue='TN', color=".3", size=3, dodge=True)
+
+# 5 core EMT TFs
+snai1 = pd.concat([pd.DataFrame(rna.loc['SNAI1'].values, columns=['Expression']), pd.DataFrame(['SNAI1']*168, columns=['EMT_TFs']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+twist1 = pd.concat([pd.DataFrame(rna.loc['TWIST1'].values, columns=['Expression']), pd.DataFrame(['TWIST1']*168, columns=['EMT_TFs']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+snai2 = pd.concat([pd.DataFrame(rna.loc['SNAI2'].values, columns=['Expression']), pd.DataFrame(['SNAI2']*168, columns=['EMT_TFs']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+zeb1 = pd.concat([pd.DataFrame(rna.loc['ZEB1'].values, columns=['Expression']), pd.DataFrame(['ZEB1']*168, columns=['EMT_TFs']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+zeb2 = pd.concat([pd.DataFrame(rna.loc['ZEB2'].values, columns=['Expression']), pd.DataFrame(['ZEB2']*168, columns=['EMT_TFs']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+
+emt_tfs = pd.concat([snai1, twist1, snai2, zeb1, zeb2], ignore_index=True)
+sns.violinplot(data=emt_tfs, x='EMT_TFs', y='Expression', hue='TN', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+sns.stripplot(data=emt_tfs, x='EMT_TFs', y='Expression', hue='TN', color=".3", size=3, dodge=True)
+
+
 
