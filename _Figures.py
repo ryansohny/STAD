@@ -71,3 +71,23 @@ sns.stripplot(data=emt_tfs, x='EMT_TFs', y='Expression', hue='TN', color=".3", s
 
 
 
+df = pd.concat([pd.DataFrame(gb_met.loc['chr7:19020990-19117672/TWIST1/ENSG00000122691/886'][:84].values, columns=['Normal']), pd.DataFrame(gb_met.loc['chr7:19020990-19117672/TWIST1/ENSG00000122691/886'][84:].values, columns=['Tumor'])], axis=1).set_index(gb_met.columns[84:])
+p = sns.violinplot(data=df, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+p = sns.stripplot(data=df, color=".3")
+p.set_ylabel("Gene Body Methylation (%)")
+p.set_title('TWIST1')
+stats.ttest_rel(df['Normal'].values, df['Tumor'].values)
+
+
+gb_met = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/GeneBody_ALL.txt", index_col=0)
+gb_met_info = pd.DataFrame(list(zip(list(map(lambda x: x.split('/')[0], gb_met.index)), list(map(lambda x: x.split('/')[1], gb_met.index)))), index=gb_met.index, columns=['Region', 'GeneID'])
+hdac9_met = gb_met.loc[gb_met_info[gb_met_info['GeneID'] == 'HDAC9'].index]
+hdac9_met_df = pd.concat([pd.DataFrame(hdac9_met.iloc[:, :84].T.values, columns=['Normal']), pd.DataFrame(hdac9_met.iloc[:, 84:].T.values, columns=['Tumor'])], axis=1).set_index(gb_met.columns[84:])
+p = sns.violinplot(data=hdac9_met_df, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+p = sns.stripplot(data=hdac9_met_df, color=".3")
+p.set_ylabel("Gene Body Methylation (%)")
+p.set_title('HDAC9', style='italic')
+plt.tight_layout()
+stats.ttest_rel(hdac9_met_df['Normal'], hdac9_met_df['Tumor'])
+
+
