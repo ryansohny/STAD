@@ -21,6 +21,7 @@ p = sns.violinplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'Percen
 p = sns.stripplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], color="black")
 p.set_xticklabels(['Normal', 'Tumor'])
 p.set_title('Average Methylation')
+p.set_ylabel("Methylation value (%)")
 
 ####################################################################################
 # Violinplot : PMD counts (Tumor vs Normal)
