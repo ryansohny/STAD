@@ -15,13 +15,13 @@ sns.swarmplot(data=new_df, color='k').set(ylabel='(Tumor - Normal) Mean methylat
 
 stats.ttest_rel(df['Normal'], df['Tumor'])
 
-# Violinplot : Mean methylation (Tumor vs Normal) ==> recent version
+# Violinplot : Mean methylation (Tumor vs Normal) ==> recent version (Figure 1A?)
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
 p = sns.violinplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], palette={'PercentMet_COV5_Normal':'navy', 'PercentMet_COV5_Tumor':'darkred'}, cut=0, scale="count")
 p = sns.stripplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], color="black")
-p.set_xticklabels(['Normal', 'Tumor'])
-p.set_title('Average Methylation')
-p.set_ylabel("Methylation value (%)")
+p.set_xticklabels(['Normal (n=84)', 'Tumor (n=84)'])
+#p.set_title('Average Methylation')
+p.set_ylabel("Average methylation (%)")
 
 ####################################################################################
 # Violinplot : PMD counts (Tumor vs Normal)
