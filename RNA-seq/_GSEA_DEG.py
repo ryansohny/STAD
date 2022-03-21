@@ -3,7 +3,6 @@
 # /mnt/mone/Project/WC300/02.RNA-seq/08.Kallisto_GencodeV24_Trimmed_Analysis/DESeq2
 
 import pandas as pd
-import seaborn as sns
 import gseapy as gp
 from gseapy.plot import barplot, dotplot
 
