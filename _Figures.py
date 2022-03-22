@@ -31,6 +31,16 @@ p = sns.stripplot(data=pmd_counts, color="k")
 p.set_ylabel("The Number of PMD across genome")
 plt.tight_layout()
 
+
+####################################################################################
+# Violinplot : PMD fraction (Tumor vs Normal)
+pmdf = pd.read_table("PMD_fraction.txt", index_col=0, sep='\t')
+p = sns.violinplot(data=pmdf, x='TN', y='PMD_Fraction', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+p = sns.stripplot(data=pmdf, x='TN', y='PMD_Fraction', color=".3")
+p.set_ylabel("Fraction of PMDs in the genome")
+p.set_xlabel("")
+plt.tight_layout()
+
 ####################################################################################
 # Violinplot : DNMT (Tumor vs Normal)
 
