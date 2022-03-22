@@ -67,3 +67,16 @@ kegg_down = gp.enrichr(gene_list=deg_down_list,
 dotplot(kegg_down.res2d, title='KEGG DEG DOWN', column='Adjusted P-value', cutoff=0.05, top_term=10, cmap='viridis_r', ofname='./KEGG_deg_down/Dotplot_KEGG_DEG_DOWN.pdf')
 
 
+
+
+# Leiden D vs Leiden A (Leiden resolution 0.75)
+deg_DA_up_list, deg_DA_down_list = list(), list()
+for i in deg_DA[(deg_DA.loc[:, 'baseMean'] >= 10) & (deg_DA.loc[:,'log2FoldChange'] > 1) & (deg_DA.loc[:, 'padj'] < 0.05)].index:
+    deg_DA_up_list.append(i)
+
+for i in deg_DA[(deg_DA.loc[:, 'baseMean'] >= 10) & (deg_DA.loc[:,'log2FoldChange'] < -1) & (deg_DA.loc[:, 'padj'] < 0.05)].index:
+    deg_DA_down_list.append(i)
+
+
+
+
