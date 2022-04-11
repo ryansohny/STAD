@@ -87,6 +87,8 @@ dmr.obs = clinic_info.copy() # copy 반드시 집어넣어야함
 
 sc.pp.scale(dmr)
 sc.tl.pca(dmr, n_comps=100, zero_center=True)
+sc.pl.pca(dmr, color='TN', palette={'Normal':'midnightblue', 'Tumor':'darkred'}, annotate_var_explained=True, size=100)
+sns.despine()
 #sc.pl.pca(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
 #sc.pl.pca_variance_ratio(dmr, log=True)
 pca_variance = pd.DataFrame(dmr.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,101)))), columns=['Variance_ratio'])
