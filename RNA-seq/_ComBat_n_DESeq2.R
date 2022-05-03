@@ -28,6 +28,7 @@ write.table(as.data.frame(adjusted_counts), file="/mnt/mone/Project/WC300/02.RNA
 txi$counts <- adjusted_counts
 ddsTxi <- DESeqDataSetFromTximport(txi, colData = sampleTable, design = ~ patient + condition)
 #dds <- ddsTxi[ rowSums(counts(ddsTxi)) > 10, ]
+dds <- ddsTxi[ rowSums(counts(ddsTxi)) >= 0, ]
 
 dds <- estimateSizeFactors(dds)
 count_normalized <- counts(dds, normalized=TRUE)
