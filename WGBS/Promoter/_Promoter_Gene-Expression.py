@@ -211,10 +211,3 @@ p.set_yticklabels(["K4me3/K27ac/K27me3","K4me3/K27ac","K4me3/K27me3","K4me3","K2
 plt.tight_layout()
 
 
-cpgdensity = pd.concat([comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity'],
-                        comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity'],
-                        comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity'],
-                        comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity'],
-                        comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity'],
-                        comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity'],
-                        comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity']])
