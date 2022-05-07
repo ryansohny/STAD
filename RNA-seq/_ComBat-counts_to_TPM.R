@@ -16,14 +16,16 @@ names(files) <- paste0(sampleName)
 
 library(tximport)
 
-txdb <- read.table("/mnt/mone/Project/WC300/02.RNA-seq/07.Kallisto_GencodeV24_Trimmed/txdb_geneSymbol.txt", header=TRUE)
-
 txi <- tximport(files, type="kallisto", txOut=TRUE)
-#txi <- tximport(files, type="kallisto", tx2gene=txdb)
 
 library(sva)
 
 adjusted_counts <- ComBat_seq(count=txi$counts, batch=sampleTable$batch, group=sampleTable$condition)
-write.table(as.data.frame(adjusted_counts), file="/mnt/mone/Project/WC300/02.RNA-seq/08.Kallisto_GencodeV24_Trimmed_Analysis/DESeq2_ComBat/STAD_SNUH_tx_combat_counts.txt")
 txi$counts <- adjusted_counts
+
+tpm <- function(counts, lengths) {
+  rate <- counts / lengths
+  rate / sum(rate) * 1e6
+}
+
 
