@@ -210,4 +210,4 @@ p.set_ylabel("")
 p.set_yticklabels(["K4me3/K27ac/K27me3","K4me3/K27ac","K4me3/K27me3","K4me3","K27ac","K27me3","None"])
 plt.tight_layout()
 
-# testing compatibility in mhryansohn desktop
+# See if it's really working (in Ryan's laptop)
