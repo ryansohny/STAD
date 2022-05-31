@@ -23,14 +23,18 @@ cmap4 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#191970", "#ff
 
 # Clinical information
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
+#clinic_info = pd.read_csv('/home/mhryan/Workspace/02.Projects/02.WC300/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
+
 
 # RNA expression processing
 ## Combat-corrected gene-level VST
 gene_vst = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/STAD_SNUH_vst_ComBat.txt", index_col=0, sep=' ')
+#gene_vst = pd.read_table("/home/mhryan/Workspace/02.Projects/02.WC300/02.RNA-seq/STAD_SNUH_vst_ComBat.txt", index_col=0, sep=' ')
 gene_vst.columns = list(map(lambda x: 'X'+x, gene_vst.columns))
 
 ## DEG results from DESeq2
 deg_tn = pd.read_csv("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/Tumor.Normal.compare_ComBat.csv", index_col=0)
+#deg_tn = pd.read_csv("/home/mhryan/Workspace/02.Projects/02.WC300/02.RNA-seq/Tumor.Normal.compare_ComBat.csv", index_col=0)
 #deg_tn = deg_tn[deg_tn.index.isin(list(map(lambda x: x.split('/')[2], pls.index)))]
 
 deg_genes = deg_tn[(deg_tn['padj'] < 0.01) & (deg_tn['baseMean'] > 10)].index
@@ -38,13 +42,17 @@ deg_genes = deg_tn[(deg_tn['padj'] < 0.01) & (deg_tn['baseMean'] > 10)].index
 ## Combat-corrected transcript-level counts
 #trans_combat = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/STAD_SNUH_tx_combat_counts.txt", index_col=0, sep=' ')
 trans_combat = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/STAD_SNUH_tx_combat_norm_counts.txt", index_col=0, sep=' ')
+#trans_combat = pd.read_table("/home/mhryan/Workspace/02.Projects/02.WC300/02.RNA-seq/STAD_SNUH_tx_combat_norm_counts.txt", index_col=0, sep=' ')
 trans_combat.columns = list(map(lambda x: 'X'+x, trans_combat.columns))
+
 
 ## Combat-corrected transcript-level log2(counts+1)
 trans_combat_log2 = np.log2(trans_combat + 1)
 
+
 ## ENSEMBL transcript ID to GeneID table
 tx2gene = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/txdb_geneSymbol.txt")
+#tx2gene = pd.read_table("/home/mhryan/Workspace/02.Projects/02.WC300/02.RNA-seq/txdb_geneSymbol.txt")
 
 # Promoter methylation processing
 
@@ -90,6 +98,8 @@ comb_pls.index = comb_pls_info.index
 comb_plsdmr_info = pd.concat([plsdmr_info, noplsdmr_info])
 comb_plsdmr = comb_pls[comb_pls.index.isin(comb_plsdmr_info.index)]
 comb_plsdmr_info = comb_plsdmr_info[comb_plsdmr_info.index.isin(comb_plsdmr.index)]
+
+del pls, nopls, pls_info, nopls_info
 
 tfs = list(map(lambda x: x.strip('\n'), open("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/hs_hgnc_curated_tfs.txt", 'r').readlines()))
 
