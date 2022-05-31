@@ -30,7 +30,7 @@ gene_vst.columns = list(map(lambda x: 'X'+x, gene_vst.columns))
 deg_tn = pd.read_csv("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/Tumor.Normal.compare_ComBat.csv", index_col=0)
 #deg_tn = deg_tn[deg_tn.index.isin(list(map(lambda x: x.split('/')[2], pls.index)))]
 
-deg_tn[(deg_tn['padj'] < 0.01) & (deg_tn['baseMean'] > 10)].index
+deg_genes = deg_tn[(deg_tn['padj'] < 0.01) & (deg_tn['baseMean'] > 10)].index
 
 ## Combat-corrected transcript-level counts
 #trans_combat = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/STAD_SNUH_tx_combat_counts.txt", index_col=0, sep=' ')
@@ -119,7 +119,7 @@ from matplotlib.ticker import StrMethodFormatter
 import matplotlib.ticker as ticker
 p.yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
 
-# RNA (transcript) expression distribution plot version 2
+# RNA (transcript) expression distribution plot version 2 ==> This is it
 ax = plt.subplot(1,1,1)
 sns.kdeplot(trans_combat_log2.iloc[:, :84].sum(axis=1).div(84)[trans_combat_log2.iloc[:, :84].sum(axis=1).div(84).index.isin( list(set(comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['ENSTID'].values)) )], color=sns.color_palette("Accent", 7)[0], fill=True, ax=ax)
 sns.kdeplot(trans_combat_log2.iloc[:, :84].sum(axis=1).div(84)[trans_combat_log2.iloc[:, :84].sum(axis=1).div(84).index.isin( list(set(comb_plsdmr_info[comb_plsdmr_info.index.isin(total2.index)]['ENSTID'].values)) )], color=sns.color_palette("Accent", 7)[1], fill=True, ax=ax)
