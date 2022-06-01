@@ -549,6 +549,7 @@ pls_dmr_deg_tn_up = pls_dmr_abs10_info[pls_dmr_abs10_info['GeneID'].isin(list(de
 pls[pls.index.isin(pls_dmr_abs10_info[(pls_dmr_abs10_info['K4me3'] == 'na') & (pls_dmr_abs10_info['K27ac'] == 'Yes') & (pls_dmr_abs10_info['K27me3'] == 'Yes')].index)].iloc[:, :84]
 
 
+
 ########################################################################################################################################################
 # K4me3 Yes / K27ac Yes / K27me3 Yes
 total = pls[pls.index.isin(pls_dmr_info[(pls_dmr_info['K4me3'] == 'Yes') & (pls_dmr_info['K27ac'] == 'Yes') & (pls_dmr_info['K27me3'] == 'Yes')].index)]

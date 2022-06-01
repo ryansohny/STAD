@@ -205,8 +205,8 @@ f2 = pd.concat([ f1, pd.DataFrame(["total6"]*len(total6), index=f1.index, column
 g1 = comb_plsdmr_info[comb_plsdmr_info.index.isin(total7.index)]['CpGdensity']
 g2 = pd.concat([ g1, pd.DataFrame(["total7"]*len(total7), index=g1.index, columns=["Category"]) ], axis=1)
 
-del a1, a2, b1, b2, c1, c2, d1, d2, e1, e2, f1, f2, g1, g2
 total = pd.concat([ a2, b2, c2, d2, e2, f2, g2 ], axis=0)
+del a1, a2, b1, b2, c1, c2, d1, d2, e1, e2, f1, f2, g1, g2
 
 palette = {"total1": sns.color_palette("Accent", 7)[0],
            "total2": sns.color_palette("Accent", 7)[1],
