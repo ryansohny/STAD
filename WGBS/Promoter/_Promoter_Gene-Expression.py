@@ -223,8 +223,9 @@ p.set_ylabel("")
 p.set_yticklabels(["K4me3/K27ac/K27me3","K4me3/K27ac","K4me3/K27me3","K4me3","K27ac","K27me3","None"])
 plt.tight_layout()
 
-# See if it's really working (in Ryan's laptop)
+
 
 
 # lincRNA 
 list(set(comb_plsdmr_info[comb_plsdmr_info['GeneID'].isin(deg_genes)][comb_plsdmr_info[comb_plsdmr_info['GeneID'].isin(deg_genes)]['Type'] == 'lincRNA']['GeneID'].values))
+
