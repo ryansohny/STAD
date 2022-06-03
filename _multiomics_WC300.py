@@ -417,10 +417,11 @@ pls_dmr_info = pls_dmr_info[pls_dmr_info.index.isin(pls.index)]
 ### Regulatory element enrichment
 fe = pd.read_table("FoldEnrichment_Regulatory_Element.txt", index_col=0)
 fe = fe.loc[['Promoter', 'CpGi', 'H3K4me3', 'H3K27ac', 'H3K27me3', 'H3K36me3', 'H3K9me3', 'Super Enhancer', 'TFBS' ]]
-ax = fe.plot.bar(rot=30, color = ['lightgrey', 'darkred', 'navy'], figsize=(15,8), fontsize=13, legend=True)
-ax.legend(loc='upper left', bbox_to_anchor=(0.88, 0.9), fontsize=20)
-plt.xlabel("")
-plt.ylabel("Fold Enrichment (x)", fontsize=13)
+ax = fe.iloc[::-1].plot.barh(rot=30, color = ['lightgrey', 'darkred', 'navy'], figsize=(15,8), fontsize=13, legend=True)
+ax.legend(loc='upper left', bbox_to_anchor=(0.6, 1), fontsize=15)
+plt.legend(frameon=False, fontsize=15)
+plt.xlabel("Fold Enrichment (Observed/Expected)", fontsize=13)
+plt.ylabel("")
 plt.tight_layout()
 sns.despine()
 

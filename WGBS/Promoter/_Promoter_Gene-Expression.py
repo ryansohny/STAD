@@ -226,5 +226,26 @@ plt.tight_layout()
 # See if it's really working (in Ryan's laptop)
 
 
+p = sns.histplot((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1))*100, kde=True, stat='density') # Promoter Met diff
+sns.despine()
+p.set_xlabel("Promoter DNA methylation Difference (Tumor-Normal)")
+plt.tight_layout()
+
+col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
+sns.clustermap(comb_plsdmr[abs((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1))*100) > 10],
+                   col_cluster=False,
+                   row_cluster=False,
+                   method='complete',
+                   metric='correlation',
+                   z_score=None,
+                   standard_scale=0,
+                   cmap=cmap,
+                   col_colors=[col_colors1],
+                   xticklabels=False,
+                   yticklabels=False)
+
+
+
+
 # lincRNA 
 list(set(comb_plsdmr_info[comb_plsdmr_info['GeneID'].isin(deg_genes)][comb_plsdmr_info[comb_plsdmr_info['GeneID'].isin(deg_genes)]['Type'] == 'lincRNA']['GeneID'].values))
