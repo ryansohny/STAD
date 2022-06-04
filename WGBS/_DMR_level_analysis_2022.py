@@ -137,6 +137,8 @@ sc.pl.umap(dmr, color=['TN', 'leiden_r05', 'leiden_r1', 'PercentMet_COV5'], add_
 
 dmr_met = pd.DataFrame(dmr.raw.X.T, index=dmr.var.index, columns=dmr.obs.index)
 
+# DNA methylation완전히 망가져있는 샘플이랑 아닌 것이랑 비교해보자 (RNA-level)
+
 col_colors1= list(dict(zip(list(dmr.obs['TN'].value_counts().index), ['#C0C0C0', '#000000']))[x] for x in dmr.obs['TN'])
 col_colors2 = list(dict(zip(list(dmr.obs['leiden_r1'].value_counts().index), dmr.uns['leiden_r1_colors']))[x] for x in dmr.obs['leiden_r1'])
 #sns.clustermap(dmr_met, method='ward', metric='euclidean', z_score=None, standard_scale=0, cmap=cmap, xticklabels=True)
