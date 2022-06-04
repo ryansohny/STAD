@@ -25,6 +25,59 @@ cmap4 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#191970", "#ff
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
 #clinic_info = pd.read_csv('/home/mhryan/Workspace/02.Projects/02.WC300/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
 
+# Imputed DMR
+dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
+
+# DMR annotation table
+#dmr_info = pd.read_table("DMR_abs15_Hyper-Hypo_annotation.txt", index_col=0)
+dmr_info = pd.read_table("DMR_abs10_Hyper-Hypo_annotation.txt", index_col=0)
+
+# Normalized CpG density to DMR annotation table
+dmr_info['Norm_CpGdensity'] = (dmr_info['CpGdensity'] - np.min(dmr_info['CpGdensity'])) / (np.max(dmr_info['CpGdensity']) - np.min(dmr_info['CpGdensity']))
+print(stats.ttest_ind(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], equal_var=False))
+#Ttest_indResult(statistic=34.445773291849996, pvalue=1.1938040649902871e-228)
+
+# CpG density boxplot between Hyper-DMR and Hypo-DMR 
+p = sns.boxplot(data=dmr_info, x='Type', y='Norm_CpGdensity', order=['Hyper', 'Hypo'], palette={'Hyper': '#A23E48', 'Hypo': '#6C8EAD'}, showfliers = False)
+#p = sns.violinplot(data=dmr_info, x='Type', y='Norm_CpGdensity', order=['Hyper', 'Hypo'], palette={'Hyper': '#A23E48', 'Hypo': '#6C8EAD'}, cut=0, scale='area')
+p = sns.stripplot(data=dmr_info, x='Type', y='Norm_CpGdensity', order=['Hyper', 'Hypo'], jitter=True, marker='o', color='black', size=1.5, alpha=0.2)
+p.set_ylabel("Normalized CpG density of DMR")
+p.set_xlabel("Types of DMR")
+p.set_xticklabels(['Hypermethylation', 'Hypomethylation'])
+plt.tight_layout()
+sns.despine()
+
+# CpG density kdeplot between Hyper-DMR and Hypo-DMR
+ax = plt.subplot(1,1,1)
+sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], color='#6C8EAD', fill=True, ax=ax)
+sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], color='#A23E48', fill=True, ax=ax)
+ax.set_xlabel("Min-Max Normalized CpG Density of DMR")
+plt.xlim((0, 1))
+plt.ylim((0, 20))
+sns.despine()
+plt.tight_layout()
+
+# DMR annotation colormap for sns.clustermap
+row_colors_dmr1 = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info['Type'])
+
+# Clustering
+g = sns.clustermap(dmr_met.loc[dmr_info.index],
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=0,
+                   cmap=cmap,
+                   robust=True,
+                   col_colors=[col_colors1],
+                   row_colors=[row_colors_dmr1],
+                   xticklabels=False,
+                   yticklabels=False,
+                   cbar_kws={'label': 'DNA methylation'})
+g.cax.set_visible(False) # Legend removal
+
+
+
+
 # Call Smooth DMR for all samples
 dmr = pd.read_csv("DMR_abs10_smooth.txt", index_col=0).iloc[:,:-1] # Type column removal
 dmr = sc.AnnData(dmr)

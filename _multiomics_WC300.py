@@ -124,9 +124,12 @@ dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
 
 # DMR annotation table
 dmr_info = pd.read_table("DMR_abs15_Hyper-Hypo_annotation.txt", index_col=0)
+dmr_info = pd.read_table("DMR_abs10_Hyper-Hypo_annotation.txt", index_col=0)
 
 # Normalized CpG density to DMR annotation table
 dmr_info['Norm_CpGdensity'] = (dmr_info['CpGdensity'] - np.min(dmr_info['CpGdensity'])) / (np.max(dmr_info['CpGdensity']) - np.min(dmr_info['CpGdensity']))
+print(stats.ttest_ind(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], equal_var=False))
+#Ttest_indResult(statistic=34.445773291849996, pvalue=1.1938040649902871e-228)
 
 # CpG density boxplot between Hyper-DMR and Hypo-DMR ==> Removal !!!
 p = sns.boxplot(data=dmr_info, x='Type', y='Norm_CpGdensity', order=['Hyper', 'Hypo'], palette={'Hyper': '#A23E48', 'Hypo': '#6C8EAD'}, showfliers = False)
@@ -142,8 +145,11 @@ sns.despine()
 ax = plt.subplot(1,1,1)
 sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], color='#6C8EAD', fill=True, ax=ax)
 sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], color='#A23E48', fill=True, ax=ax)
+ax.set_xlabel("Min-Max Normalized CpG Density of DMR")
 plt.xlim((0, 1))
+plt.ylim((0, 20))
 sns.despine()
+plt.tight_layout()
 
 # DMR annotation colormap for sns.clustermap
 row_colors_dmr1 = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info['Type'])
