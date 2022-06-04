@@ -245,7 +245,11 @@ sns.clustermap(comb_plsdmr[abs((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_pls
                    yticklabels=False)
 
 
-
+# Venn Diagram
+# conda install -c conda-forge matplotlib-venn
+from matplotlib_venn import venn2
+venn2(subsets=(11347, 7602, 2181), set_labels=('DMR-Promoter (Gene)', 'DEG'))
+plt.tight_layout()
 
 # lincRNA 
 list(set(comb_plsdmr_info[comb_plsdmr_info['GeneID'].isin(deg_genes)][comb_plsdmr_info[comb_plsdmr_info['GeneID'].isin(deg_genes)]['Type'] == 'lincRNA']['GeneID'].values))
