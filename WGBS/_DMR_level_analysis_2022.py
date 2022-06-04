@@ -27,6 +27,7 @@ clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer
 
 # Imputed DMR
 dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
+dmr_met.columns = list(map(lambda x: 'X'+x, dmr_met.columns))
 
 # DMR annotation table
 dmr_info2 = pd.read_table("DMR_abs15_Hyper-Hypo_annotation.txt", index_col=0)
@@ -109,8 +110,7 @@ g.cax.set_visible(False) # Legend removal
 
 
 # Call Smooth DMR for all samples
-dmr = pd.read_csv("DMR_abs10_smooth.txt", index_col=0).iloc[:,:-1] # Type column removal
-dmr = sc.AnnData(dmr)
+dmr = sc.AnnData(dmr_met.T)
 dmr.raw = dmr
 dmr.layers['Percent_met'] = dmr.X
 # np.ndarray.min(dmr.raw.X) ==> 전체 table에서 minimum value 값 (maximum은 min==> max)
@@ -121,6 +121,7 @@ sc.pp.scale(dmr)
 sc.tl.pca(dmr, n_comps=100, zero_center=True)
 sc.pl.pca(dmr, color='TN', palette={'Normal':'midnightblue', 'Tumor':'darkred'}, annotate_var_explained=True, size=100)
 sns.despine()
+
 #sc.pl.pca(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
 #sc.pl.pca_variance_ratio(dmr, log=True)
 pca_variance = pd.DataFrame(dmr.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,101)))), columns=['Variance_ratio'])
