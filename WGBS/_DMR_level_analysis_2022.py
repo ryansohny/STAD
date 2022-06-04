@@ -29,7 +29,7 @@ clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer
 dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
 
 # DMR annotation table
-#dmr_info = pd.read_table("DMR_abs15_Hyper-Hypo_annotation.txt", index_col=0)
+dmr_info2 = pd.read_table("DMR_abs15_Hyper-Hypo_annotation.txt", index_col=0)
 dmr_info = pd.read_table("DMR_abs10_Hyper-Hypo_annotation.txt", index_col=0)
 
 # Normalized CpG density to DMR annotation table
@@ -59,22 +59,52 @@ plt.tight_layout()
 
 # DMR annotation colormap for sns.clustermap
 row_colors_dmr1 = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info['Type'])
-
-# Clustering
-g = sns.clustermap(dmr_met.loc[dmr_info.index],
+row_colors_dmr2 = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info2['Type'])
+col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
+# Clustering 1
+g = sns.clustermap(dmr_met.loc[dmr_info2.index],
                    method='ward',
                    metric='euclidean',
                    z_score=None,
-                   standard_scale=0,
+                   standard_scale=None,
                    cmap=cmap,
                    robust=True,
                    col_colors=[col_colors1],
-                   row_colors=[row_colors_dmr1],
+                   row_colors=[row_colors_dmr2],
                    xticklabels=False,
                    yticklabels=False,
                    cbar_kws={'label': 'DNA methylation'})
 g.cax.set_visible(False) # Legend removal
 
+# Clustering 2
+g = sns.clustermap(dmr_met.loc[dmr_info2[dmr_info2['Type'] == 'Hyper'].index],
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=None,
+                   cmap=cmap,
+                   robust=True,
+                   col_colors=[col_colors1],
+                   row_colors=None,
+                   xticklabels=False,
+                   yticklabels=False,
+                   cbar_kws={'label': 'DNA methylation'})
+g.cax.set_visible(False) # Legend removal
+
+# Clustering 1
+g = sns.clustermap(dmr_met.loc[dmr_info2.index],
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=None,
+                   cmap=cmap,
+                   robust=True,
+                   col_colors=[col_colors1],
+                   row_colors=[row_colors_dmr2],
+                   xticklabels=False,
+                   yticklabels=False,
+                   cbar_kws={'label': 'DNA methylation'})
+g.cax.set_visible(False) # Legend removal
 
 
 
