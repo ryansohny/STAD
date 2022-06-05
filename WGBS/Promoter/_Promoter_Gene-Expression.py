@@ -248,7 +248,8 @@ sns.clustermap(comb_plsdmr[abs((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_pls
 # Venn Diagram
 # conda install -c conda-forge matplotlib-venn
 from matplotlib_venn import venn2
-venn2(subsets=(11347, 7602, 2181), set_labels=('DMR-Promoter (Gene)', 'DEG'), subset_label_formatter=lambda x: f"{x:,.0f}")
+vd = venn2(subsets=(11347, 7602, 2181), set_labels=('DMR-Promoter (Gene)', 'DEG'), subset_label_formatter=lambda x: f"{x:,.0f}")
+plt.title('Overlapped Gene')
 plt.tight_layout()
 
 # lincRNA 
