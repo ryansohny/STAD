@@ -101,7 +101,7 @@ comb_plsdmr_info = comb_plsdmr_info[comb_plsdmr_info.index.isin(comb_plsdmr.inde
 
 del pls, nopls, pls_info, nopls_info
 
-tfs = list(map(lambda x: x.strip('\n'), open("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/hs_hgnc_curated_tfs.txt", 'r').readlines()))
+#tfs = list(map(lambda x: x.strip('\n'), open("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/hs_hgnc_curated_tfs.txt", 'r').readlines()))
 
 #########################################################################################################################################################
 
