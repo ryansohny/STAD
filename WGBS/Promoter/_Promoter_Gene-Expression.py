@@ -92,11 +92,13 @@ pls = pls[pls.index.isin(list(map(lambda x:'/'.join(x.split('/')[:-1]), pls_info
 nopls = nopls[nopls.index.isin(list(map(lambda x:'/'.join(x.split('/')[:-1]), nopls_info.index)))]
 
 comb_pls = pd.concat([pls, nopls])
+comb_pls = comb_pls*100
 comb_pls_info = pd.concat([pls_info, nopls_info])
 comb_pls.index = comb_pls_info.index
 
 comb_plsdmr_info = pd.concat([plsdmr_info, noplsdmr_info])
 comb_plsdmr = comb_pls[comb_pls.index.isin(comb_plsdmr_info.index)]
+comb_plsdmr = comb_plsdmr*100
 comb_plsdmr_info = comb_plsdmr_info[comb_plsdmr_info.index.isin(comb_plsdmr.index)]
 
 del pls, nopls, pls_info, nopls_info
