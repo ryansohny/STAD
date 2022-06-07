@@ -28,6 +28,7 @@ clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer
 # Imputed DMR
 dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
 dmr_met.columns = list(map(lambda x: 'X'+x, dmr_met.columns))
+dmr_met = dmr_met*100
 
 # DMR annotation table
 dmr_info2 = pd.read_table("DMR_abs15_Hyper-Hypo_annotation.txt", index_col=0)

@@ -105,6 +105,19 @@ del pls, nopls, pls_info, nopls_info
 
 #########################################################################################################################################################
 
+# CpGi effect
+a = pd.DataFrame(trans_combat_log2[trans_combat_log2.index.isin(list(comb_pls_info[comb_pls_info['CpGi'] == 'Yes']['ENSTID'].values))].iloc[:,:84].mean(axis=1), columns=['CpGi Promoter'])
+b = pd.DataFrame(trans_combat_log2[trans_combat_log2.index.isin(list(comb_pls_info[comb_pls_info['CpGi'] == 'na']['ENSTID'].values))].iloc[:,:84].mean(axis=1), columns=['Non-CpGi Promoter'])
+ab = pd.concat([a,b], axis=1)
+p = sns.boxplot(data=ab, palette={'CpGi Promoter':'#00203FFF', 'Non-CpGi Promoter':'#ADEFD1FF'}, width=0.5, showfliers = False)
+p = sns.stripplot(data=ab, jitter=True, marker='o', color='black', size=1.5, alpha=0.2)
+p.set_ylabel("Gene expression")
+p.set_title("CpG islands present in Promoter or not")
+plt.tight_layout()
+sns.despine()
+stats.ttest_ind(a, b)
+
+
 ## Transcript Expression Distribution according to Histone Modifications
 total1 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') & (comb_plsdmr_info['K27ac'] == 'Yes') & (comb_plsdmr_info['K27me3'] == 'Yes')].index)]
 total2 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') & (comb_plsdmr_info['K27ac'] == 'Yes') & (comb_plsdmr_info['K27me3'] == 'na')].index)]
