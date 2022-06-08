@@ -48,7 +48,7 @@ trans_combat.columns = list(map(lambda x: 'X'+x, trans_combat.columns))
 
 ## Combat-corrected transcript-level log2(counts+1)
 trans_combat_log2 = np.log2(trans_combat + 1)
-
+del trans_combat
 
 ## ENSEMBL transcript ID to GeneID table
 tx2gene = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/txdb_geneSymbol.txt")
