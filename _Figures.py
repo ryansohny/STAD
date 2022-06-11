@@ -1,8 +1,28 @@
 ####################################################################################
-# Boxplot : Mean methylation (Tumor vs Normal) ==> deprecated
+
 import pandas as pd
 import seaborn as sns
+clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
 
+# Bisulfite conversion rate, Non-CpG Methylation Percentage
+clinic_info["Conversion_rate"] = clinic_info["Conversion_rate"]*100
+clinic_info["Methyl_CHG"] = clinic_info["Methyl_CHG"]*100
+clinic_info["Methyl_CHH"] = clinic_info["Methyl_CHH"]*100
+
+ax1 = plt.subplot(1,3,1)
+ax2 = plt.subplot(1,3,2)
+ax3 = plt.subplot(1,3,3)
+sns.boxplot(data=clinic_info, x='Conversion_rate', showfliers = True, color="grey", ax=ax1)
+sns.boxplot(data=clinic_info, x='Methyl_CHG', showfliers = True, color="magenta",ax=ax2)
+sns.boxplot(data=clinic_info, x='Methyl_CHH', showfliers = True, color="green", ax=ax3)
+ax1.set_xlabel("Bisulfite Conversion Rate (%)")
+ax2.set_xlabel("Cytosine Methylated in CHG context (%)")
+ax3.set_xlabel("Cytosine Methylated in CHH context (%)")
+sns.despine()
+plt.tight_layout()
+
+
+# Boxplot : Mean methylation (Tumor vs Normal) ==> deprecated
 df = dmr_t.obs[['mean_met_normal', 'mean_met_tumor']]
 df.rename(columns={'mean_met_normal': 'Normal', 'mean_met_tumor': 'Tumor'}, inplace=True)
 
@@ -16,7 +36,7 @@ sns.swarmplot(data=new_df, color='k').set(ylabel='(Tumor - Normal) Mean methylat
 stats.ttest_rel(df['Normal'], df['Tumor'])
 
 # Violinplot : Mean methylation (Tumor vs Normal) ==> recent version (Figure 1A?)
-clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
+clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
 p = sns.violinplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], palette={'PercentMet_COV5_Normal':'navy', 'PercentMet_COV5_Tumor':'darkred'}, cut=0, scale="count")
 p = sns.stripplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], color="black")
 p.set_xticklabels(['Normal (n=84)', 'Tumor (n=84)'])
