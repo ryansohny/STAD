@@ -91,7 +91,7 @@ g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='i
 se_deg_rna_roworder = g.dendrogram_row.reordered_ind
 
 #  Array of codes for making SE_DEG_ALL.txt (refer to /mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/DMR/DMR_min55_new/Enrichment/Stomach_SE)
-reorder = list(rna_norm_log2[rna_norm_log2.index.isin( se_deg )].iloc[se_deg_rna_roworder].index)
+reorder = list(gene_vst[gene_vst.index.isin( se_deg )].iloc[se_deg_rna_roworder].index)
 
 se_deg_met = pd.read_table("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/SE_DEG_ALL.txt", index_col=0)
 se_deg_met.columns = list(map(lambda x: 'X'+x, se_deg_met.columns))
@@ -100,6 +100,7 @@ a = pd.DataFrame(list(map(lambda x: x.split('/')[0], se_deg_met.index)), columns
 b = pd.DataFrame(list(map(lambda x: x.split('/')[1], se_deg_met.index)), columns=['GeneID'], index=se_deg_met.index)
 c = pd.DataFrame(list(map(lambda x: x.split('/')[2], se_deg_met.index)), columns=['CpG'], index=se_deg_met.index)
 se_deg_met_info = pd.concat([a,b,c], axis=1)
+del a, b, c
 
 reorder_iloc = list()
 
