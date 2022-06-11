@@ -62,6 +62,66 @@ p.set_xlabel("")
 plt.tight_layout()
 
 ####################################################################################
+# Super Enhancer Overlapped Genes
+se_genes = pd.read_table("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/SE_DMR_abs15_hyper_overlapped_genes.txt")
+se_genes = list(se_genes.values.flatten()) # 100개
+
+deg_tn[deg_tn.index.isin(se_genes)] # ==> 83개
+deg_tn_uplist = deg_tn[(deg_tn['baseMean'] >=10) & (deg_tn['padj'] < 0.005) & (deg_tn['log2FoldChange'] > 0)].index
+deg_tn_downlist = deg_tn[(deg_tn['baseMean'] >=10) & (deg_tn['padj'] < 0.005) & (deg_tn['log2FoldChange'] < 0)].index
+
+# deg_tn_uplist[deg_tn_uplist.isin(se_genes)] ==> 12개
+# deg_tn_downlist[deg_tn_downlist.isin(se_genes)] ==> 24개
+se_deg = list( deg_tn_uplist[deg_tn_uplist.isin(se_genes)] ) + list( deg_tn_downlist[deg_tn_downlist.isin(se_genes)] )
+
+col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
+
+g = sns.clustermap(gene_vst[gene_vst.index.isin( se_deg )],
+                   col_cluster=False,
+                    method='ward',
+                   metric='euclidean',
+                   z_score=0,
+                   standard_scale=None,
+                   cmap=cmap3,
+                    col_colors=[col_colors1],
+                   xticklabels=False,
+                    yticklabels=True, vmin=-2.5, vmax=2.5)
+g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='italic')
+
+se_deg_rna_roworder = g.dendrogram_row.reordered_ind
+
+#  Array of codes for making SE_DEG_ALL.txt (refer to /mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/DMR/DMR_min55_new/Enrichment/Stomach_SE)
+reorder = list(rna_norm_log2[rna_norm_log2.index.isin( se_deg )].iloc[se_deg_rna_roworder].index)
+
+se_deg_met = pd.read_table("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/SE_DEG_ALL.txt", index_col=0)
+se_deg_met.columns = list(map(lambda x: 'X'+x, se_deg_met.columns))
+
+a = pd.DataFrame(list(map(lambda x: x.split('/')[0], se_deg_met.index)), columns=['Region'], index=se_deg_met.index)
+b = pd.DataFrame(list(map(lambda x: x.split('/')[1], se_deg_met.index)), columns=['GeneID'], index=se_deg_met.index)
+c = pd.DataFrame(list(map(lambda x: x.split('/')[2], se_deg_met.index)), columns=['CpG'], index=se_deg_met.index)
+se_deg_met_info = pd.concat([a,b,c], axis=1)
+
+reorder_iloc = list()
+
+for i in reorder:
+    reorder_iloc.append(list(se_deg_met_info['GeneID'].values).index(i))
+
+# DNA methylation of Super enhancers overlapped with DEG
+g = sns.clustermap(se_deg_met.iloc[reorder_iloc],
+                   col_cluster=False,
+                   row_cluster=False,
+                   cmap='Spectral_r',
+                   z_score=None,
+                   standard_scale=0,
+                   col_colors=[col_colors1],
+                   xticklabels=False,
+                   yticklabels=False)
+
+
+
+
+
+####################################################################################
 # Violinplot : DNMT (Tumor vs Normal)
 
 dnmt1 = pd.concat([pd.DataFrame(rna.loc[['DNMT1']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(rna.loc[['DNMT1']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(rna.columns[84:])
