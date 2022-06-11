@@ -22,8 +22,8 @@ cmap4 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#191970", "#ff
 %autoindent
 
 # Clinical information
-clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
-#clinic_info = pd.read_csv('/home/mhryan/Workspace/02.Projects/02.WC300/2022_WC300_clinical_information_Xadded.csv', index_col='Sample')
+clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
+#clinic_info = pd.read_csv('/home/mhryan/Workspace/02.Projects/02.WC300/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
 
 # Imputed DMR
 dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
