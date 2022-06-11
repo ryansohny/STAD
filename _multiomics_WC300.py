@@ -31,6 +31,7 @@ p.set_ylabel("Average methylation (%)")
 sns.despine()
 
 # PMD methylation
+col_colors1 = 
 sns.clustermap(pmd_met,
                    col_cluster=False,
                    method='ward',
