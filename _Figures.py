@@ -75,6 +75,7 @@ deg_tn_downlist = deg_tn[(deg_tn['baseMean'] >=10) & (deg_tn['padj'] < 0.005) & 
 se_deg = list( deg_tn_uplist[deg_tn_uplist.isin(se_genes)] ) + list( deg_tn_downlist[deg_tn_downlist.isin(se_genes)] )
 
 col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
+cmap3 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#0057B8", "#000000", "#ffd700"])
 
 g = sns.clustermap(gene_vst[gene_vst.index.isin( se_deg )],
                    col_cluster=False,
@@ -107,8 +108,44 @@ reorder_iloc = list()
 for i in reorder:
     reorder_iloc.append(list(se_deg_met_info['GeneID'].values).index(i))
 
+spearmanr = list()
+pvalues = list()
+
+for i in list(range(36)):
+    spearmanr.append(stats.spearmanr(se_deg_met.iloc[reorder_iloc].iloc[i], gene_vst[gene_vst.index.isin( se_deg )].iloc[se_deg_rna_roworder].iloc[i])[0])
+
+for i in list(range(36)):
+    pvalues.append(stats.spearmanr(se_deg_met.iloc[reorder_iloc].iloc[i], gene_vst[gene_vst.index.isin( se_deg )].iloc[se_deg_rna_roworder].iloc[i])[1])
+
+from statsmodels.stats.multitest import multipletests
+bh_corrected_pval = multipletests(pvals=pvalues, alpha=0.01, method='fdr_bh')[1]
+
+spearmanr_df = pd.DataFrame(spearmanr, index=gene_vst[gene_vst.index.isin( se_deg )].iloc[se_deg_rna_roworder].index, columns=['Spearman_Rho'])
+bh_corrected_pval_df = pd.DataFrame(bh_corrected_pval, index=gene_vst[gene_vst.index.isin( se_deg )].iloc[se_deg_rna_roworder].index, columns=['FDR_BH_Pval'])
+df_final = pd.concat([spearmanr_df, bh_corrected_pval_df], axis=1)
+df_final = df_final[df_final['FDR_BH_Pval'] < 0.01].sort_values(by='Spearman_Rho', ascending=True)
+
+# (Again) Heatmap of SE overlapped gene expression 
+g = sns.clustermap(gene_vst[gene_vst.index.isin(df_final.index)].reindex(df_final.index),
+                   col_cluster=False,
+                   row_cluster=False,
+                   z_score=0,
+                   standard_scale=None,
+                   cmap=cmap3,
+                   col_colors=[col_colors1],
+                   xticklabels=False,
+                   yticklabels=True, vmin=-2.5, vmax=2.5)
+g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='italic')
+
+sorter = list(df_final.index) # https://stackoverflow.com/questions/23482668/sorting-by-a-custom-list-in-pandas
+sorterIndex = dict(zip(sorter, range(len(sorter))))
+new_se_deg_met_info = se_deg_met_info[se_deg_met_info['GeneID'].isin(df_final.index)]
+new_se_deg_met_info['New_order'] = new_se_deg_met_info['GeneID'].map(sorterIndex)
+new_se_deg_met_info.sort_values(by='New_order', inplace=True)
+
+
 # DNA methylation of Super enhancers overlapped with DEG
-g = sns.clustermap(se_deg_met.iloc[reorder_iloc],
+g = sns.clustermap(se_deg_met[se_deg_met.index.isin(new_se_deg_met_info.index)].reindex(new_se_deg_met_info.index),
                    col_cluster=False,
                    row_cluster=False,
                    cmap='Spectral_r',
@@ -118,35 +155,135 @@ g = sns.clustermap(se_deg_met.iloc[reorder_iloc],
                    xticklabels=False,
                    yticklabels=False)
 
+sns.clustermap(df_final['Spearman_Rho'], col_cluster=False, row_cluster=False, vmin=-0.65, vmax=0.22)
 
+####################################################################################
+## Determining CIMP Tumors
+
+# Call CpGi methylation
+#cpgi_met = pd.read_table("CpGi_ALL.txt", index_col=0)
+cpgi_met = pd.read_table("CpGi_smooth.txt", index_col=0)
+cpgi_met = cpgi_met * 100
+# Column name change
+cpgi_met.columns = list(map(lambda x: 'X'+x, cpgi_met.columns))
+#cpgi_met.index = list(map(lambda x: '/'.join(x.split('/')[:2]), cpgi_met.index))
+
+# Discard missing CpGi DNA methylation rows & pick CpGi sites where Normal DNA methylation < 40
+cpgi_met = cpgi_met[cpgi_met.isna().sum(axis=1) == 0][cpgi_met[cpgi_met.isna().sum(axis=1) == 0].iloc[:, :84].mean(axis=1) < 40]
+
+# Call Promoter CpGi
+cpgi_pls = list(map(lambda x: x.strip('\n').split('/')[0], open("PLS_CpGi.txt", 'r').readlines()))
+
+# Select Promoter CpGi
+cpgi_met = cpgi_met[cpgi_met.index.isin(cpgi_pls)]
+
+# mean(Tumor - Normal) >= 10%
+cpgi_tn_met = cpgi_met.iloc[:, 84:] - cpgi_met.iloc[:, :84].values
+cpgi_tn_met = cpgi_tn_met[cpgi_tn_met.mean(axis=1) >= 10]
+
+# Hierarchical clustering
+g = sns.clustermap(cpgi_tn_met,
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=None,
+                   cmap=cmap,
+                   xticklabels=False,
+                   yticklabels=False,
+                   col_colors=[col_colors_DMR_leiden])
+
+# Attach CIMP annotation for Tumor DNA methylation
+g = sns.clustermap(dmr_t_met,
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=0,
+                   cmap=cmap,
+                   xticklabels=False,
+                   yticklabels=False,
+                   col_colors=[col_colors_DMR_leiden, col_colors_CIMP],
+                   row_colors=[row_colors_dmr1],
+                   cbar_kws={'label': 'DNA methylation'})
+g.ax_row_dendrogram.set_visible(False)
+g.cax.set_visible(False)
+
+
+# Deposit CIMP information inside Tumor DNA methylation anndata
+dmr_t.obs['CIMP'] = list(map(lambda x: 'CIMP(+)' if x == True else 'CIMP(-)', dmr_t.obs.index.isin(cpgi_tn_met.iloc[:,g.dendrogram_col.reordered_ind[:35]].columns)))
+dmr_t.obs[['DMR Clusters2', 'CIMP']].value_counts().sort_index()
+#DMR Clusters2  CIMP
+#leiden_A       CIMP(+)     2
+#               CIMP(-)    30
+#leiden_B       CIMP(+)    22
+#               CIMP(-)    13
+#leiden_C       CIMP(+)    11
+#               CIMP(-)     6
+#dtype: int64
+
+
+# CIMP proportional plot
+ax = (pd.crosstab(dmr_t.obs['DMR Clusters'], dmr_t.obs['CIMP'], normalize=0)*100).plot.bar(stacked=True, color=['#8b0000ff', '#000080ff'], rot=0)
+plt.ylabel("Proportion (%)")
+ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
+plt.tight_layout()
+sns.despine()
+
+# Association between PMD methylation and CIMP-CGI DNA methylation
+normal_cpgi = cpgi_met.iloc[:, :84].mean()
+tumor_cpgi = cpgi_met.iloc[:, 84:].mean()
+
+pmd_met = pd.read_table("PMD_ALL.txt", index_col=0)
+pmd_met.columns = list(map(lambda x: 'X'+x, pmd_met.columns))
+normal_pmd = pmd_met.iloc[:, :84].mean()
+tumor_pmd = pmd_met.iloc[:, 84:].mean()
+
+a = pd.concat([normal_cpgi, normal_pmd, pd.Series(['Normal']*84, index=pmd_met.columns[:84])], axis=1)
+a.columns = ['CpGi', 'PMD', 'Type']
+b = pd.concat([tumor_cpgi, tumor_pmd, dmr_t.obs['CIMP']], axis=1)
+b.columns = ['CpGi', 'PMD', 'Type']
+
+c = pd.concat([a,b])
+
+ax = sns.scatterplot(data=c, x='CpGi', y='PMD', hue='Type', linewidth=0, palette={'Normal': 'darkblue', 'CIMP(-)': 'salmon', 'CIMP(+)': 'maroon'}, s=50)
+ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.0))
+sns.despine()
+plt.tight_layout()
+ax.set_xlabel('CIMP-CGI DNA methylation (%)')
+ax.set_ylabel('PMD DNA methylation (%)')
 
 
 
 ####################################################################################
 # Violinplot : DNMT (Tumor vs Normal)
 
-dnmt1 = pd.concat([pd.DataFrame(rna.loc[['DNMT1']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(rna.loc[['DNMT1']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(rna.columns[84:])
+dnmt1 = pd.concat([pd.DataFrame(gene_vst.loc[['DNMT1']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(gene_vst.loc[['DNMT1']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(gene_vst.columns[84:])
 sns.violinplot(data=dnmt1, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count").set_title('DNMT1')
 
-dnmt3a = pd.concat([pd.DataFrame(rna.loc[['DNMT3A']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(rna.loc[['DNMT3A']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(rna.columns[84:])
+dnmt3a = pd.concat([pd.DataFrame(gene_vst.loc[['DNMT3A']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(gene_vst.loc[['DNMT3A']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(gene_vst.columns[84:])
 sns.violinplot(data=dnmt3a, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count").set_title('DNMT3A')
 
-dnmt3b = pd.concat([pd.DataFrame(rna.loc[['DNMT3B']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(rna.loc[['DNMT3B']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(rna.columns[84:])
+dnmt3b = pd.concat([pd.DataFrame(gene_vst.loc[['DNMT3B']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(gene_vst.loc[['DNMT3B']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(gene_vst.columns[84:])
 sns.violinplot(data=dnmt3b, palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count").set_title('DNMT3B')
 
 # Multiple DNMT
-dnmt1 = pd.concat([pd.DataFrame(rna.loc['DNMT1'].values, columns=['Expression']), pd.DataFrame(['DNMT1']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
-dnmt3a = pd.concat([pd.DataFrame(rna.loc['DNMT3A'].values, columns=['Expression']), pd.DataFrame(['DNMT3A']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
-dnmt3b = pd.concat([pd.DataFrame(rna.loc['DNMT3B'].values, columns=['Expression']), pd.DataFrame(['DNMT3B']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+dnmt1 = pd.concat([pd.DataFrame(gene_vst.loc['DNMT1'].values, columns=['Expression']), pd.DataFrame(['DNMT1']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+dnmt3a = pd.concat([pd.DataFrame(gene_vst.loc['DNMT3A'].values, columns=['Expression']), pd.DataFrame(['DNMT3A']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+dnmt3b = pd.concat([pd.DataFrame(gene_vst.loc['DNMT3B'].values, columns=['Expression']), pd.DataFrame(['DNMT3B']*168, columns=['DNMT']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
 dnmt = pd.concat([dnmt1, dnmt3a, dnmt3b], ignore_index=True)
-sns.violinplot(data=dnmt, x='DNMT', y='Expression', hue='TN', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
-sns.stripplot(data=dnmt, x='DNMT', y='Expression', hue='TN', color=".3", size=3, dodge=True)
+p = sns.violinplot(data=dnmt, x='DNMT', y='Expression', hue='TN', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
+p = sns.stripplot(data=dnmt, x='DNMT', y='Expression', hue='TN', color=".3", size=3, dodge=True)
+sns.despine()
+p.set_xlabel("")
+p.set_ylabel("DNMT Gene Expression")
+plt.legend(frameon=False, fontsize=15)
+p.set_xticklabels(p.get_xticklabels(), fontstyle='italic')
+plt.tight_layout()
 
 # Multiple GATA
-gata5 = pd.concat([pd.DataFrame(rna.loc['GATA5'].values, columns=['Expression']), pd.DataFrame(['GATA5']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
-gata6 = pd.concat([pd.DataFrame(rna.loc['GATA6'].values, columns=['Expression']), pd.DataFrame(['GATA6']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
-gata4 = pd.concat([pd.DataFrame(rna.loc['GATA4'].values, columns=['Expression']), pd.DataFrame(['GATA4']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
-gata2 = pd.concat([pd.DataFrame(rna.loc['GATA2'].values, columns=['Expression']), pd.DataFrame(['GATA2']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata5 = pd.concat([pd.DataFrame(gene_vst.loc['GATA5'].values, columns=['Expression']), pd.DataFrame(['GATA5']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata6 = pd.concat([pd.DataFrame(gene_vst.loc['GATA6'].values, columns=['Expression']), pd.DataFrame(['GATA6']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata4 = pd.concat([pd.DataFrame(gene_vst.loc['GATA4'].values, columns=['Expression']), pd.DataFrame(['GATA4']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
+gata2 = pd.concat([pd.DataFrame(gene_vst.loc['GATA2'].values, columns=['Expression']), pd.DataFrame(['GATA2']*168, columns=['GATA']), pd.DataFrame(['Normal']*84 + ['Tumor']*84, columns=['TN'])], axis=1)
 
 gata = pd.concat([gata5, gata6, gata4, gata2], ignore_index=True)
 sns.violinplot(data=gata, x='GATA', y='Expression', hue='TN', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
