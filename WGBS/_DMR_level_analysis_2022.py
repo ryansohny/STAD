@@ -126,8 +126,8 @@ sns.despine()
 #sc.pl.pca(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
 #sc.pl.pca_variance_ratio(dmr, log=True)
 pca_variance = pd.DataFrame(dmr.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,101)))), columns=['Variance_ratio'])
-np.sum(pca_variance.values.flatten()[:11])
-# 0.7058488
+np.sum(pca_variance.values.flatten()[:4])
+# 0.70480245
 
 sc.pp.neighbors(dmr, n_neighbors=13, n_pcs=11) # 13 ==> Good
 sc.tl.leiden(dmr, resolution=0.5, key_added='leiden_r05')
