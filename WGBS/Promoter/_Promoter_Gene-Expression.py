@@ -98,7 +98,7 @@ comb_pls.index = comb_pls_info.index
 
 comb_plsdmr_info = pd.concat([plsdmr_info, noplsdmr_info])
 comb_plsdmr = comb_pls[comb_pls.index.isin(comb_plsdmr_info.index)]
-comb_plsdmr = comb_plsdmr*100
+comb_plsdmr = comb_plsdmr
 comb_plsdmr_info = comb_plsdmr_info[comb_plsdmr_info.index.isin(comb_plsdmr.index)]
 
 del pls, nopls, pls_info, nopls_info

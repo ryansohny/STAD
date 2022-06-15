@@ -21,6 +21,9 @@ ax3.set_xlabel("Cytosine Methylated in CHH context (%)")
 sns.despine()
 plt.tight_layout()
 
+"""
+
+"""
 
 # Boxplot : Mean methylation (Tumor vs Normal) ==> deprecated
 df = dmr_t.obs[['mean_met_normal', 'mean_met_tumor']]
@@ -169,7 +172,8 @@ cpgi_met.columns = list(map(lambda x: 'X'+x, cpgi_met.columns))
 #cpgi_met.index = list(map(lambda x: '/'.join(x.split('/')[:2]), cpgi_met.index))
 
 # Discard missing CpGi DNA methylation rows & pick CpGi sites where Normal DNA methylation < 40
-cpgi_met = cpgi_met[cpgi_met.isna().sum(axis=1) == 0][cpgi_met[cpgi_met.isna().sum(axis=1) == 0].iloc[:, :84].mean(axis=1) < 40]
+# cpgi_met = cpgi_met[cpgi_met.isna().sum(axis=1) == 0][cpgi_met[cpgi_met.isna().sum(axis=1) == 0].iloc[:, :84].mean(axis=1) < 40]
+cpgi_met = cpgi_met[cpgi_met.iloc[:, :84].mean(axis=1) < 40]
 
 # Call Promoter CpGi
 cpgi_pls = list(map(lambda x: x.strip('\n').split('/')[0], open("PLS_CpGi.txt", 'r').readlines()))
@@ -251,7 +255,22 @@ plt.tight_layout()
 ax.set_xlabel('CIMP-CGI DNA methylation (%)')
 ax.set_ylabel('PMD DNA methylation (%)')
 
+####################################################################################
+# Violinplot : FOXA2 & CASZ1 (Tumor vs Normal)
 
+foxa2 = pd.concat([pd.DataFrame(gene_vst.loc[['FOXA2']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(gene_vst.loc[['FOXA2']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(gene_vst.columns[84:])
+p = sns.boxplot(data=foxa2, palette={'Normal':'navy', 'Tumor':'darkred'}, width=0.8, showfliers=True)
+p = sns.stripplot(data=foxa2, jitter=True, marker='o', color='black', size=1.5, alpha=0.2)
+p.set_ylabel("Gene Expression")
+plt.tight_layout()
+sns.despine()
+
+casz1 = pd.concat([pd.DataFrame(gene_vst.loc[['CASZ1']].iloc[:, :84].T.values.flatten(), columns=['Normal']), pd.DataFrame(gene_vst.loc[['CASZ1']].iloc[:, 84:].T.values.flatten(), columns=['Tumor'])], axis=1).set_index(gene_vst.columns[84:])
+p = sns.boxplot(data=casz1, palette={'Normal':'navy', 'Tumor':'darkred'}, width=0.8, showfliers=True)
+p = sns.stripplot(data=casz1, jitter=True, marker='o', color='black', size=1.5, alpha=0.2)
+p.set_ylabel("Gene Expression")
+plt.tight_layout()
+sns.despine()
 
 ####################################################################################
 # Violinplot : DNMT (Tumor vs Normal)
