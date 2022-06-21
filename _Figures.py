@@ -79,6 +79,7 @@ se_deg = list( deg_tn_uplist[deg_tn_uplist.isin(se_genes)] ) + list( deg_tn_down
 
 col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
 cmap3 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#0057B8", "#000000", "#ffd700"])
+cmap_rkg = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#00FF00", "#000000", "#ff0000"])   #"R"ed blac"k" "G"reen
 
 g = sns.clustermap(gene_vst[gene_vst.index.isin( se_deg )],
                    col_cluster=False,
@@ -86,7 +87,7 @@ g = sns.clustermap(gene_vst[gene_vst.index.isin( se_deg )],
                    metric='euclidean',
                    z_score=0,
                    standard_scale=None,
-                   cmap=cmap3,
+                   cmap=cmap_rkg,
                     col_colors=[col_colors1],
                    xticklabels=False,
                     yticklabels=True, vmin=-2.5, vmax=2.5)
@@ -134,7 +135,7 @@ g = sns.clustermap(gene_vst[gene_vst.index.isin(df_final.index)].reindex(df_fina
                    row_cluster=False,
                    z_score=0,
                    standard_scale=None,
-                   cmap=cmap3,
+                   cmap=cmap_rkg,
                    col_colors=[col_colors1],
                    xticklabels=False,
                    yticklabels=True, vmin=-2.5, vmax=2.5)
@@ -151,7 +152,7 @@ new_se_deg_met_info.sort_values(by='New_order', inplace=True)
 g = sns.clustermap(se_deg_met[se_deg_met.index.isin(new_se_deg_met_info.index)].reindex(new_se_deg_met_info.index),
                    col_cluster=False,
                    row_cluster=False,
-                   cmap='Spectral_r',
+                   cmap=cmap,
                    z_score=None,
                    standard_scale=0,
                    col_colors=[col_colors1],
@@ -159,6 +160,28 @@ g = sns.clustermap(se_deg_met[se_deg_met.index.isin(new_se_deg_met_info.index)].
                    yticklabels=False)
 
 sns.clustermap(df_final['Spearman_Rho'], col_cluster=False, row_cluster=False, vmin=-0.65, vmax=0.22)
+
+# Homeobox (HOX) cluster DNA methylation
+hox = pd.read_table("/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/HOX_Clusters_ALL.txt", index_col=0)
+hox_fillna0 = hox.fillna(0)
+hoxa = hox_fillna0.iloc[100:210].copy()
+hoxb = hox_fillna0.iloc[330:].copy()
+hoxc = hox_fillna0.iloc[210:330].copy()
+hoxd = hox_fillna0.iloc[:100].copy()
+hox_fillna0_new = pd.concat([hoxa, hoxb, hoxc, hoxd])
+sns.clustermap(hoxa,
+                   method='ward',
+                   metric='euclidean',
+                   col_cluster=False,
+                   row_cluster=False,
+                   z_score=None,
+                   standard_scale=0,
+                   cmap=cmap,
+                   xticklabels=False,
+                   yticklabels=False,
+                   col_colors=[col_colors1],
+                   row_colors=None,
+                   cbar_kws={'label': 'DNA methylation'}) # Original cmap='gnuplot2'
 
 ####################################################################################
 ## Determining CIMP Tumors
