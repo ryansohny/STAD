@@ -174,14 +174,15 @@ sns.clustermap(hoxa,
                    metric='euclidean',
                    col_cluster=False,
                    row_cluster=False,
-                   z_score=None,
-                   standard_scale=0,
+                   z_score=0,
+                   standard_scale=None,
                    cmap=cmap,
                    xticklabels=False,
                    yticklabels=False,
-                   col_colors=[col_colors1],
+                   col_colors=None,
                    row_colors=None,
-                   cbar_kws={'label': 'DNA methylation'}) # Original cmap='gnuplot2'
+                   cbar_kws={'label': 'DNA methylation'},
+                   vmin=-3, vmax=2) # Original cmap='gnuplot2'
 
 ####################################################################################
 ## Determining CIMP Tumors
@@ -294,6 +295,40 @@ p = sns.stripplot(data=casz1, jitter=True, marker='o', color='black', size=1.5, 
 p.set_ylabel("Gene Expression")
 plt.tight_layout()
 sns.despine()
+
+# Epimutation Burden-related analyses
+
+dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
+dmr_met.columns = list(map(lambda x: 'X'+x, dmr_met.columns))
+dmr_met = dmr_met*100
+
+dmr = sc.AnnData(dmr_met.iloc[:, 84:].T) # Only Tumor
+dmr.raw = dmr
+dmr.layers['Percent_met'] = dmr.X
+
+dmr.obs = clinic_info.iloc[84:, :].copy()
+
+sc.pp.scale(dmr)
+sc.tl.pca(dmr, n_comps=83, zero_center=True)
+#sc.pl.pca(dmr, color='TN', palette={'Normal':'midnightblue', 'Tumor':'darkred'}, annotate_var_explained=True, size=100)
+sc.pl.pca(dmr, color=['EBV'], palette={'Negative':'midnightblue', 'Positive':'darkred'}, annotate_var_explained=True, size=300)
+sns.despine()
+g = sc.pl.pca(dmr, color=['EpiBurden'], color_map=cmap, annotate_var_explained=True, size=300, show=False)
+g.set_title("Epimutation Burden")
+sns.despine()
+
+PC1 = pd.DataFrame(list(map(lambda x: dmr.obsm['X_pca'][x][0], list(range(0,84)))), columns=['PC1'], index=dmr.obs.index)
+df = pd.concat([PC1, dmr.obs['EpiBurden']], axis=1)
+g = sns.lmplot(data=df, x="PC1", y="EpiBurden")
+g.set_ylabels("Epimutation Burden")
+stats.pearsonr(df['EpiBurden'], df['PC1'])
+
+#sc.pl.pca(dmr, color='TN', add_outline=True, size=100, palette={'Normal':'Blue', 'Tumor':'Red'})
+#sc.pl.pca_variance_ratio(dmr, log=True)
+pca_variance = pd.DataFrame(dmr.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,101)))), columns=['Variance_ratio'])
+np.sum(pca_variance.values.flatten()[:5])
+# 0.7084484
+
 
 ####################################################################################
 # Violinplot : DNMT (Tumor vs Normal)
