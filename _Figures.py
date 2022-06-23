@@ -405,6 +405,14 @@ stats.ttest_rel(hdac9_met_df['Normal'], hdac9_met_df['Tumor'])
 
 
 
+
+
+
+
+
+
+
+
 # HGSOC for thesis (Remove after adding to the HGSOC repository)
 
 # cm03 wc300_ver2 environment
@@ -421,8 +429,11 @@ sns.set(font="Arial", font_scale=1.2, style='ticks')
 %matplotlib
 
 sohn_emtindex = pd.read_table("EMT_Index_HGSOC.txt", index_col=0, sep='\t')
+sohn_emtindex['Cluster'].replace(to_replace={"B":"Cluster B", "A": "Cluster A"}, inplace=True)
+sohn_emtindex.rename(columns={'Cluster':'HGSOC Cluster'}, inplace=True)
 sohn_tcga_emtindex = pd.read_table("TCGA_EMT-index.txt", index_col=0, sep='\t')
 sohn_tcga_emtindex.rename(columns={'EMT_class':'Defined by EMT index'}, inplace=True)
+sohn_tcga_emtindex['Defined by EMT index'].replace(to_replace={"EMT_high":"EMT-high", "EMT_low": "EMT-low"}, inplace=True)
 
 def intersection(lst1, lst2): 
     lst3 = [value for value in lst1 if value in lst2]
@@ -455,7 +466,12 @@ Then, Run _calculate_geometric_mean_from_TPM.py ==> GM_EMT_Genes_Cristescu_SNUH.
 emt_index_from_cristescu = pd.read_table("GM_EMT_Genes_Cristescu_SNUH.txt", index_col=0, sep="\t")
 sohn_ws76['EMT-index_Cristescu'] = emt_index_from_cristescu.loc['EMT_index'].values # From 76 gene sigantures table
 
-g = sns.lmplot(data=sohn_ws76, x='EMT-index', y='EMT-index_Cristescu')
+label_orders = ['Cluster A', 'Cluster B']
+g = sns.lmplot(data=sohn_ws76, x='EMT-index', y='EMT-index_Cristescu', hue='HGSOC Cluster', palette={'Cluster A':'midnightblue', 'Cluster B':'darkred'}, fit_reg=False, facet_kws={'legend_out': True})
+for text, label in zip(g._legend.texts, label_orders):
+    text.set_text(label)
+
+sns.regplot(data=sohn_ws76, x='EMT-index', y='EMT-index_Cristescu', scatter=False, color='black', ax=g.axes[0,0])
 g.set_xlabels("EMT index")
 g.set_ylabels("EMT index from Cristescu et al.")
 stats.pearsonr(sohn_ws76['EMT-index_Cristescu'], sohn_ws76['EMT-index'])
@@ -477,7 +493,12 @@ ws_emt = pd.DataFrame(list(map(lambda x: (df_sohn_byers.iloc[: , x] *  df_sohn_b
 ws_emt['Norm_WS_EMT'] = (ws_emt - ws_emt.mean()).values.flatten() # Normalized Weighted Sum of EMT
 sohn_ws76 = pd.concat([ws_emt, sohn_emtindex], axis=1)
 
-g = sns.lmplot(data=sohn_ws76, x='EMT-index', y='Norm_WS_EMT')
+label_orders = ['Cluster A', 'Cluster B']
+g = sns.lmplot(data=sohn_ws76, x='EMT-index', y='Norm_WS_EMT', hue='HGSOC Cluster', palette={'Cluster A':'midnightblue', 'Cluster B':'darkred'}, fit_reg=False, facet_kws={'legend_out': True})
+for text, label in zip(g._legend.texts, label_orders):
+    text.set_text(label)
+
+sns.regplot(data=sohn_ws76, x='EMT-index', y='Norm_WS_EMT', scatter=False, color='black', ax=g.axes[0,0])
 g.set_xlabels("EMT index")
 g.set_ylabels("EMT score from Guo et al.")
 stats.pearsonr(sohn_ws76['Norm_WS_EMT'], sohn_ws76['EMT-index'])
@@ -512,11 +533,44 @@ ws_emt_tcga = pd.DataFrame(list(map(lambda x: (df_tcga_byers.iloc[: , x] *  df_t
 ws_emt_tcga['Norm_WS_EMT'] = (ws_emt_tcga - ws_emt_tcga.mean()).values.flatten() # Normalized Weighted Sum of EMT
 tcga_ws76 = pd.concat([ws_emt_tcga, sohn_tcga_emtindex], axis=1)
 
-g = sns.lmplot(data=tcga_ws76, x='EMT-index', y='Norm_WS_EMT', hue='Defined by EMT index', palette={'EMT_low':'midnightblue', 'EMT_high':'darkred'}, fit_reg=False)
+label_orders = ['EMT-high', 'EMT-low']
+g = sns.lmplot(data=tcga_ws76, x='EMT-index', y='Norm_WS_EMT', hue='Defined by EMT index', palette={'EMT-low':'midnightblue', 'EMT-high':'darkred'}, fit_reg=False, facet_kws={'legend_out':True})
+for text, label in zip(g._legend.texts, label_orders):
+    text.set_text(label)
+
 sns.regplot(data=tcga_ws76, x='EMT-index', y='Norm_WS_EMT', scatter=False, color='black', ax=g.axes[0,0])
 g.set_xlabels("EMT index")
 g.set_ylabels("EMT score from Guo et al.")
 stats.pearsonr(tcga_ws76['Norm_WS_EMT'], tcga_ws76['EMT-index'])
+
+g = sns.lmplot(data=pd.concat([np.log(df_tcga+1).loc['VIM'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1), x='Norm_WS_EMT', y='VIM', scatter_kws={'color':'black'}, line_kws={'color': 'black'}) # Vimentin
+g.set_xlabels("EMT score from Guo et al.")
+g.set_ylabels("Log2[TPM]")
+g.fig.suptitle("Vimentin ($\it{VIM}$)")
+data = pd.concat([np.log(df_tcga+1).loc['VIM'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1)
+stats.pearsonr(data['VIM'], data['Norm_WS_EMT'])
+
+g = sns.lmplot(data=pd.concat([np.log(df_tcga+1).loc['CDH1'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1), x='Norm_WS_EMT', y='CDH1', scatter_kws={'color':'black'}, line_kws={'color': 'black'}) # E-cadherin
+g.set_xlabels("EMT score from Guo et al.")
+g.set_ylabels("Log2[TPM]")
+g.fig.suptitle("E-cadherin ($\it{CDH1}$)")
+data = pd.concat([np.log(df_tcga+1).loc['CDH1'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1)
+stats.pearsonr(data['CDH1'], data['Norm_WS_EMT'])
+
+g = sns.lmplot(data=pd.concat([np.log(df_tcga+1).loc['CDH2'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1), x='Norm_WS_EMT', y='CDH2', scatter_kws={'color':'black'}, line_kws={'color': 'black'}) # N-cadherin
+g.set_xlabels("EMT score from Guo et al.")
+g.set_ylabels("Log2[TPM]")
+g.fig.suptitle("N-cadherin ($\it{CDH2}$)")
+data = pd.concat([np.log(df_tcga+1).loc['CDH2'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1)
+stats.pearsonr(data['CDH2'], data['Norm_WS_EMT'])
+
+g = sns.lmplot(data=pd.concat([np.log(df_tcga+1).loc['TGFB1'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1), x='Norm_WS_EMT', y='TGFB1', scatter_kws={'color':'black'}, line_kws={'color': 'black'}) # TGFB
+g.set_xlabels("EMT score from Guo et al.")
+g.set_ylabels("Log2[TPM]")
+g.fig.suptitle(r"TGF$\beta$ ($\it{TGFB1}$)")
+data = pd.concat([np.log(df_tcga+1).loc['TGFB1'], tcga_ws76.loc[:, 'Norm_WS_EMT']], axis=1)
+stats.pearsonr(data['TGFB1'], data['Norm_WS_EMT'])
+
 
 # Cristescu et al (TCGA)
 
@@ -544,20 +598,25 @@ Then, Run python _calculate_geometric_mean_from_TPM.py EMT_Genes_Cristescu_forTC
 emt_index_from_cristescu_tcga = pd.read_table("GM_EMT_Genes_Cristescu_forTCGA_TCGA-OV.txt", index_col=0, sep="\t")
 tcga_ws76['EMT-index_Cristescu'] = emt_index_from_cristescu_tcga.loc['EMT_index'].values # From 76 gene sigantures table
 
-g = sns.lmplot(data=tcga_ws76, x='EMT-index', y='EMT-index_Cristescu')
-g.set_xlabels("EMT index")
-g.set_ylabels("EMT index from Cristescu et al.")
-stats.pearsonr(tcga_ws76['EMT-index_Cristescu'], tcga_ws76['EMT-index'])
+label_orders = ['EMT-high', 'EMT-low']
+g = sns.lmplot(data=tcga_ws76, x='EMT-index', y='EMT-index_Cristescu', hue='Defined by EMT index', palette={'EMT-low':'midnightblue', 'EMT-high':'darkred'}, fit_reg=False, facet_kws={'legend_out':True})
+for text, label in zip(g._legend.texts, label_orders):
+    text.set_text(label)
 
-g = sns.lmplot(data=tcga_ws76, x='EMT-index', y='EMT-index_Cristescu', hue='Defined by EMT index', palette={'EMT_low':'midnightblue', 'EMT_high':'darkred'}, fit_reg=False)
 sns.regplot(data=tcga_ws76, x='EMT-index', y='EMT-index_Cristescu', scatter=False, color='black', ax=g.axes[0,0])
 g.set_xlabels("EMT index")
 g.set_ylabels("EMT index from Cristescu et al.")
 stats.pearsonr(tcga_ws76['EMT-index_Cristescu'], tcga_ws76['EMT-index'])
 
 # For Guo et al. and Cristescu et al.
-g = sns.lmplot(data=tcga_ws76, x='EMT-index_Cristescu', y='Norm_WS_EMT', hue='Defined by EMT index', palette={'EMT_low':'midnightblue', 'EMT_high':'darkred'}, fit_reg=False)
+label_orders = ['EMT-high', 'EMT-low']
+g = sns.lmplot(data=tcga_ws76, x='EMT-index_Cristescu', y='Norm_WS_EMT', hue='Defined by EMT index', palette={'EMT-low':'midnightblue', 'EMT-high':'darkred'}, fit_reg=False, facet_kws={'legend_out':True})
+for text, label in zip(g._legend.texts, label_orders):
+    text.set_text(label)
+
 sns.regplot(data=tcga_ws76, x='EMT-index_Cristescu', y='Norm_WS_EMT', scatter=False, color='black', ax=g.axes[0,0])
 g.set_xlabels("EMT index from Cristescu et al.")
 g.set_ylabels("EMT index from Guo et al.")
 stats.pearsonr(tcga_ws76['EMT-index_Cristescu'], tcga_ws76['Norm_WS_EMT'])
+
+
