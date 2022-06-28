@@ -42,7 +42,7 @@ stats.ttest_rel(df['Normal'], df['Tumor'])
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
 p = sns.violinplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], palette={'PercentMet_COV5_Normal':'navy', 'PercentMet_COV5_Tumor':'darkred'}, cut=0, scale="count")
 p = sns.stripplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], color="black")
-p.set_xticklabels(['Normal (n=84)', 'Tumor (n=84)'])
+p.set_xticklabels(['Normal (N=84)', 'Tumor (N=84)'])
 #p.set_title('Average Methylation')
 p.set_ylabel("Average methylation (%)")
 
@@ -61,8 +61,10 @@ pmdf = pd.read_table("PMD_fraction.txt", index_col=0, sep='\t')
 p = sns.violinplot(data=pmdf, x='TN', y='PMD_Fraction', palette={'Normal':'navy', 'Tumor':'darkred'}, cut=0, scale="count")
 p = sns.stripplot(data=pmdf, x='TN', y='PMD_Fraction', color=".3")
 p.set_ylabel("Fraction of PMDs in the genome")
+p.set_xticklabels(['Normal (N=84)', 'Tumor (N=84)'])
 p.set_xlabel("")
 plt.tight_layout()
+sns.despine()
 
 ####################################################################################
 # Super Enhancer Overlapped Genes
@@ -398,3 +400,26 @@ p.set_title('HDAC9', style='italic')
 plt.tight_layout()
 stats.ttest_rel(hdac9_met_df['Normal'], hdac9_met_df['Tumor'])
 
+
+
+# TCGA subtypes
+tcga_info = pd.read_csv('/data/Projects/phenomata/01.Projects/12.Thesis/Part2/tcga_subtypes.csv', index_col='Sample')
+dmr.obs['TCGA Subtypes'] = tcga_info['Type']
+
+df = pd.concat([dmr.obs['EpiBurden'], dmr.obs['TCGA Subtypes']], axis=1)
+df.rename(columns={"EpiBurden": "Epimutation Burden"}, inplace=True)
+
+p = sns.boxplot(data=df, x='TCGA Subtypes', y='Epimutation Burden', palette={'EBV': '#DC143C', 'MSI': '#4169E1', 'GS/CIN': '#9370DB'}, width=0.8, showfliers=True, order=['EBV', 'MSI', 'GS/CIN'])
+p = sns.stripplot(data=df, x='TCGA Subtypes', y='Epimutation Burden', jitter=True, marker='o', color='black', size=2.0, alpha=0.5, order=['EBV', 'MSI', 'GS/CIN'])
+p.set_xticklabels(['EBV (N=4)', 'MSI (N=10)', 'GS/CIN (N=70)'])
+plt.tight_layout()
+sns.despine()
+
+stats.mannwhitneyu(df[df['TCGA Subtypes'] == 'EBV']['Epimutation Burden'], df[df['TCGA Subtypes'] == 'MSI']['Epimutation Burden'])
+MannwhitneyuResult(statistic=27.0, pvalue=0.3736263736263737)
+
+stats.mannwhitneyu(df[df['TCGA Subtypes'] == 'EBV']['Epimutation Burden'], df[df['TCGA Subtypes'] == 'GS/CIN']['Epimutation Burden'])
+MannwhitneyuResult(statistic=199.0, pvalue=0.16814499237806202)
+
+stats.mannwhitneyu(df[df['TCGA Subtypes'] == 'MSI']['Epimutation Burden'], df[df['TCGA Subtypes'] == 'GS/CIN']['Epimutation Burden'])
+MannwhitneyuResult(statistic=356.0, pvalue=0.9362267365375121)
