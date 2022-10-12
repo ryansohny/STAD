@@ -1,4 +1,4 @@
-# source activate wc300
+# source activate wc300_ver2
 # ipython --profile=wc300
 
 import scanpy as sc
@@ -111,8 +111,9 @@ del pls, nopls, pls_info, nopls_info
 a = pd.DataFrame(trans_combat_log2[trans_combat_log2.index.isin(list(comb_pls_info[comb_pls_info['CpGi'] == 'Yes']['ENSTID'].values))].iloc[:,:84].mean(axis=1), columns=['CpGi Promoter'])
 b = pd.DataFrame(trans_combat_log2[trans_combat_log2.index.isin(list(comb_pls_info[comb_pls_info['CpGi'] == 'na']['ENSTID'].values))].iloc[:,:84].mean(axis=1), columns=['Non-CpGi Promoter'])
 ab = pd.concat([a,b], axis=1)
-p = sns.boxplot(data=ab, palette={'CpGi Promoter':'#00203FFF', 'Non-CpGi Promoter':'#ADEFD1FF'}, width=0.5, showfliers = False)
-p = sns.stripplot(data=ab, jitter=True, marker='o', color='black', size=1.5, alpha=0.2)
+#p = sns.boxplot(data=ab, palette={'CpGi Promoter':'#00203FFF', 'Non-CpGi Promoter':'#ADEFD1FF'}, width=0.5, showfliers = False)
+p = sns.violinplot(data=ab, palette={'CpGi Promoter':'#00203FFF', 'Non-CpGi Promoter':'#ADEFD1FF'}, width=0.5, showfliers = False, scale="width")
+p = sns.stripplot(data=ab, jitter=True, marker='o', color='black', size=1.5, alpha=0.1)
 p.set_ylabel("Gene expression")
 p.set_title("CpG islands present in Promoter or not")
 plt.tight_layout()
