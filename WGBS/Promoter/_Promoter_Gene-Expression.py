@@ -231,7 +231,7 @@ palette = {"total1": sns.color_palette("Accent", 7)[0],
            "total5": sns.color_palette("Accent", 7)[4],
            "total6": sns.color_palette("Accent", 7)[5],
            "total7": sns.color_palette("Accent", 7)[6]}
-p = sns.violinplot(data=total, x='CpGdensity', y='Category', palette=palette, scale='width', cut=0)
+p = sns.violinplot(data=total, x='CpGdensity', y='Category', palette=palette, scale='count', cut=0) # scale='width' ==> scale='count' (2022-10-12)
 p = sns.stripplot(data=total, x='CpGdensity', y='Category', jitter=True, marker='o', color='black', size=1, alpha=0.1)
 sns.despine()
 p.set_xlabel("CpG Density within DMR Promoter")
@@ -239,16 +239,65 @@ p.set_ylabel("")
 p.set_yticklabels(["K4me3/K27ac/K27me3","K4me3/K27ac","K4me3/K27me3","K4me3","K27ac","K27me3","None"])
 plt.tight_layout()
 
+# Promoter CpG density distribution plot version 3 (2022-10-12 requested by SYS)
+
+total1 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') | (comb_plsdmr_info['K27ac'] == 'Yes') | (comb_plsdmr_info['K27me3'] == 'Yes')].index)]
+total2 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'na')].index)]
+
+a1 = comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity']
+a2 = pd.concat([ a1, pd.DataFrame(["total1"]*len(total1), index=a1.index, columns=["Category"]) ], axis=1)
+b1 = comb_plsdmr_info[comb_plsdmr_info.index.isin(total2.index)]['CpGdensity']
+b2 = pd.concat([ b1, pd.DataFrame(["total2"]*len(total2), index=b1.index, columns=["Category"]) ], axis=1)
+
+total = pd.concat([ a2, b2 ], axis=0)
+del a1, a2, b1, b2
+
+palette = {"total1": sns.color_palette("Accent", 7)[0],
+           "total2": sns.color_palette("Accent", 7)[6]}
+p = sns.violinplot(data=total, x='CpGdensity', y='Category', palette=palette, scale='count', cut=0)
+p = sns.stripplot(data=total, x='CpGdensity', y='Category', jitter=True, marker='o', color='black', size=1, alpha=0.1)
+sns.despine()
+p.set_xlabel("CpG Density within DMR Promoter")
+p.set_ylabel("")
+p.set_yticklabels(["Histone Modification Present","None"])
+plt.tight_layout()
+
+# Promoter CpG density distribution plot version 4 (2022-10-12 requested by SYS)
+
+total1 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[((comb_plsdmr_info['K4me3'] == 'Yes') | (comb_plsdmr_info['K27ac'] == 'Yes')) & (comb_plsdmr_info['K27me3'] == 'na')].index)]
+total2 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'Yes')].index)]
+total3 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'na')].index)]
+
+a1 = comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['CpGdensity']
+a2 = pd.concat([ a1, pd.DataFrame(["total1"]*len(total1), index=a1.index, columns=["Category"]) ], axis=1)
+b1 = comb_plsdmr_info[comb_plsdmr_info.index.isin(total2.index)]['CpGdensity']
+b2 = pd.concat([ b1, pd.DataFrame(["total2"]*len(total2), index=b1.index, columns=["Category"]) ], axis=1)
+c1 = comb_plsdmr_info[comb_plsdmr_info.index.isin(total3.index)]['CpGdensity']
+c2 = pd.concat([ c1, pd.DataFrame(["total3"]*len(total3), index=c1.index, columns=["Category"]) ], axis=1)
+
+total = pd.concat([ a2, b2, c2 ], axis=0)
+del a1, a2, b1, b2, c1, c2
+
+palette = {"total1": sns.color_palette("Accent", 7)[0],
+           "total2": sns.color_palette("Accent", 7)[1], 
+           "total3": sns.color_palette("Accent", 7)[6]}
+p = sns.violinplot(data=total, x='CpGdensity', y='Category', palette=palette, scale='width', cut=0)
+p = sns.stripplot(data=total, x='CpGdensity', y='Category', jitter=True, marker='o', color='black', size=1, alpha=0.1)
+sns.despine()
+p.set_xlabel("CpG Density within DMR Promoter")
+p.set_ylabel("")
+p.set_yticklabels(["Active mark (H3K4me3 or H3K27ac) present","H3K27me3 present", "None"])
+plt.tight_layout()
 
 
 
-p = sns.histplot((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1))*100, kde=True, stat='density') # Promoter Met diff
+p = sns.histplot((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1)), kde=True, stat='density') # Promoter Met diff
 sns.despine()
 p.set_xlabel("Promoter DNA methylation Difference (Tumor-Normal)")
 plt.tight_layout()
 
 col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
-sns.clustermap(comb_plsdmr[abs((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1))*100) > 10],
+sns.clustermap(comb_plsdmr[abs((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1))) > 10],
                    col_cluster=False,
                    row_cluster=False,
                    method='complete',
@@ -259,6 +308,15 @@ sns.clustermap(comb_plsdmr[abs((comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_pls
                    col_colors=[col_colors1],
                    xticklabels=False,
                    yticklabels=False)
+
+# Met-Diff & Expression Diff plot
+plsdiff = (comb_plsdmr.iloc[:, 84:].mean(axis=1) - comb_plsdmr.iloc[:, :84].mean(axis=1))
+transdiff = (trans_combat_log2.iloc[:, 84:].mean(axis=1) - trans_combat_log2.iloc[:, :84].mean(axis=1))
+
+new_transdiff = transdiff[transdiff.index.isin( list(set(comb_plsdmr_info['ENSTID'].values)) )]
+
+total1 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[((comb_plsdmr_info['K4me3'] == 'Yes') | (comb_plsdmr_info['K27ac'] == 'Yes')) & (comb_plsdmr_info['K27me3'] == 'na')].index)]
+
 
 
 # Venn Diagram
