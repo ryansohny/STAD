@@ -14,12 +14,11 @@ sc.settings.verbosity = 3
 plt.rcParams['figure.figsize'] = (5,5)
 sns.set(font="Arial", font_scale=1, style='ticks')
 cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffdab9", "#8b0a50"])
-cmap4 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#191970", "#ffdab9", "#8B0000"])
-cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#000000", "#8b0a50"])
-cmap2 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#0057b7", "#000000", "#ffd700"])
-cmap3 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#0057B8", "#000000", "#ffd700"])
 %matplotlib
 %autoindent
+cmap4 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#191970", "#ffdab9", "#8B0000"])
+cmap2 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#0057b7", "#000000", "#ffd700"])
+cmap3 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#0057B8", "#000000", "#ffd700"])
 
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
 
