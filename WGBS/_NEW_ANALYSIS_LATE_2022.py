@@ -43,8 +43,8 @@ cpgi_met = cpgi_met * 100
 cpgi_met.columns = list(map(lambda x: 'X'+x, cpgi_met.columns))
 
 # Discard missing CpGi DNA methylation rows & pick CpGi sites where Normal DNA methylation < 40
-cpgi_met = cpgi_met[cpgi_met.iloc[:, :84].mean(axis=1) < 40]
-
+cpgi_met = cpgi_met[cpgi_met.iloc[:, :84].mean(axis=1) < 40] # (i)
+#cpgi_met = cpgi_met[cpgi_met.iloc[:, :84].mean(axis=1) < 20] # (ii)
 # Call Promoter CpGi
 cpgi_pls = list(map(lambda x: x.strip('\n').split('/')[0], open("PLS_CpGi.txt", 'r').readlines()))
 
@@ -68,23 +68,28 @@ g = sns.clustermap(cpgi_pls_tn_met,
                    col_colors=None)
 
 
-cimp_positive_samples = list(cpgi_pls_tn_met.iloc[:, g.dendrogram_col.reordered_ind[:33]].columns)
+cimp_positive_samples = list(cpgi_pls_tn_met.iloc[:, g.dendrogram_col.reordered_ind[:33]].columns) # (i)
+#cimp_positive_samples = list(cpgi_pls_tn_met.iloc[:, g.dendrogram_col.reordered_ind[:32]].columns) # (i)
 
-total_sample_cimp_info = list(map(lambda x: 'CIMP(+)' if x in cimp_positive_samples else ('Normal' if x[-1] == 'N' else 'CIMP(-)'), cpgi_pls_met.columns))
+total_sample_cimp_info = list(map(lambda x: 'CIMP(+) tumor (N=33)' if x in cimp_positive_samples else ('Normal (N = 84)' if x[-1] == 'N' else 'CIMP(-) tumor (N = 51)'), cpgi_pls_met.columns))
 total_sample_cimp_info = pd.Series(dict(zip(list(cpgi_pls_met.columns), total_sample_cimp_info)))
 
 # Association between PMD methylation and CIMP-CGI DNA methylation
 
-cimp_pmd = pd.concat([cpgi_pls_met.mean(), pmd_met.mean(), total_sample_cimp_info], axis=1)
+cimp_pmd = pd.concat([cpgi_pls_met[cpgi_pls_met.index.isin(cpgi_pls_tn_met.index)].mean(), pmd_met.mean(), total_sample_cimp_info], axis=1)
 cimp_pmd.columns = ['CpGimet', 'PMDmet', 'CIMPtype']
 rho = round(stats.spearmanr(cimp_pmd['CpGimet'], cimp_pmd['PMDmet'])[0], 3)
 
 fig, ax = plt.subplots(1,1, figsize=(7,7))
-sns.scatterplot(data=cimp_pmd, x='CpGimet', y='PMDmet', hue='CIMPtype', linewidth=0, palette={'Normal': 'darkblue', 'CIMP(-)': 'salmon', 'CIMP(+)': 'maroon'}, s=50, ax=ax)
-ax.legend(loc='upper left', bbox_to_anchor=(0.65, 1.0), frameon=False)
+sns.scatterplot(data=cimp_pmd, x='CpGimet', y='PMDmet', hue='CIMPtype', linewidth=0, palette={'Normal (N = 84)': 'darkblue', 'CIMP(-) tumor (N = 51)': 'salmon', 'CIMP(+) tumor (N=33)': 'maroon'}, s=50, ax=ax)
+handles, labels = ax.get_legend_handles_labels()
+order = [0, 2, 1]
+ax.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper left', bbox_to_anchor=(0.01, 0.18), frameon=True, edgecolor='black', fancybox=False)
 ax.set_xlabel('CIMP-CGI DNA methylation (%)')
 ax.set_ylabel('PMD DNA methylation (%)')
-ax.text(0.6, 0.18, f"Spearman's Rho: {rho}", size=10, weight='bold', transform=ax.transAxes)
+ax.text(0.47, 0.1, f"Spearman's Rho: {rho}", size=11, weight='bold', transform=ax.transAxes)
+ax.set_xlim((0, 75))
+ax.set_ylim((48, 83))
 sns.despine(ax=ax)
 
 
@@ -94,3 +99,17 @@ plt.ylabel("Proportion (%)")
 ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
 plt.tight_layout()
 sns.despine()
+
+
+
+
+
+
+
+
+# DMR
+
+dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
+dmr_met.columns = list(map(lambda x: 'X'+x, dmr_met.columns))
+dmr_met = dmr_met*100
+
