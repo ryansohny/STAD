@@ -109,3 +109,48 @@ dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
 dmr_met.columns = list(map(lambda x: 'X'+x, dmr_met.columns))
 dmr_met = dmr_met*100
 
+dmr_info = pd.read_table("DMR_abs10_Hyper-Hypo_annotation.txt", index_col=0)
+
+# Remove PMD-overlapped Hypo-DMR
+with open("DMR_abs10_hypo_wPMD.index", 'r') as dfh:
+    hypodmr_wPMD = list(map(lambda x: x.strip(), dfh.readlines()))
+
+dmr_met = dmr_met[~dmr_met.index.isin(hypodmr_wPMD)]
+dmr_info = dmr_info[~dmr_info.index.isin(hypodmr_wPMD)]
+
+del hypodmr_wPMD
+
+
+# Normalized CpG density to DMR annotation table
+dmr_info['Norm_CpGdensity'] = (dmr_info['CpGdensity'] - np.min(dmr_info['CpGdensity'])) / (np.max(dmr_info['CpGdensity']) - np.min(dmr_info['CpGdensity']))
+print(stats.ttest_ind(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], equal_var=False))
+#Ttest_indResult(statistic=34.445773291849996, pvalue=1.1938040649902871e-228)
+
+# CpG density kdeplot between Hyper-DMR and Hypo-DMR
+ax = plt.subplot(1,1,1)
+sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], color='#6C8EAD', fill=True, ax=ax)
+sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], color='#A23E48', fill=True, ax=ax)
+ax.set_xlabel("Min-Max Normalized CpG Density of DMR")
+plt.xlim((0, 1))
+plt.ylim((0, 20))
+sns.despine()
+
+
+# DMR annotation colormap for sns.clustermap
+row_colors_dmr1 = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info['Type'])
+row_colors_dmr2 = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info2['Type'])
+col_colors1 = ['#C0C0C0']*84 + ['#000000']*84
+# Clustering 1
+g = sns.clustermap(dmr_met.loc[dmr_info2.index],
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=None,
+                   cmap=cmap,
+                   robust=True,
+                   col_colors=[col_colors1],
+                   row_colors=[row_colors_dmr2],
+                   xticklabels=False,
+                   yticklabels=False,
+                   cbar_kws={'label': 'DNA methylation'})
+g.cax.set_visible(False) # Legend removal
