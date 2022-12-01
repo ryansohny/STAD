@@ -103,10 +103,6 @@ sns.despine()
 
 
 
-
-
-
-
 # DMR
 
 dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
