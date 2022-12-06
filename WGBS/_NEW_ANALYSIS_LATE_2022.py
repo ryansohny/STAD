@@ -94,17 +94,14 @@ sns.despine(ax=ax)
 
 
 # CIMP proportional plot
-ax = (pd.crosstab(dmr_t.obs['DMR Clusters'], dmr_t.obs['CIMP'], normalize=0)*100).plot.bar(stacked=True, color=['#8b0000ff', '#000080ff'], rot=0)
-plt.ylabel("Proportion (%)")
-ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
-plt.tight_layout()
-sns.despine()
-
-
+#ax = (pd.crosstab(dmr_t.obs['DMR Clusters'], dmr_t.obs['CIMP'], normalize=0)*100).plot.bar(stacked=True, color=['#8b0000ff', '#000080ff'], rot=0)
+#plt.ylabel("Proportion (%)")
+#ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
+#plt.tight_layout()
+#sns.despine()
 
 
 # DMR
-
 dmr_met = pd.read_table("DMR_abs10_smooth.txt", index_col=0)
 dmr_met.columns = list(map(lambda x: 'X'+x, dmr_met.columns))
 dmr_met = dmr_met*100
@@ -120,6 +117,37 @@ dmr_info = dmr_info[~dmr_info.index.isin(hypodmr_wPMD)]
 
 del hypodmr_wPMD
 
+col_colors_tn = ['#C0C0C0']*84 + ['#000000']*84
+col_colors_cimp = list(dict(zip(['Normal (N = 84)', 'CIMP(-) tumor (N = 51)', 'CIMP(+) tumor (N=33)'], ['darkblue', 'salmon', 'maroon']))[x] for x in cimp_pmd['CIMPtype'])
+row_colors_dmr = list(dict(zip(['Hypo', 'Hyper'], ['#6C8EAD', '#A23E48']))[x] for x in dmr_info['Type'])
+
+
+g = sns.clustermap(dmr_met,
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=None,
+                   cmap='RdYlBu_r',
+                   xticklabels=False,
+                   yticklabels=False,
+                   vmin=0,
+                   vmax=100,
+                   col_colors=[col_colors_tn, col_colors_cimp],
+                   row_colors=row_colors_dmr) # standard scale: 0 (rows) or 1 columns (subtract min and divide by max)
+g.ax_heatmap.set_ylabel('')
+
+# Only Tumor    
+g = sns.clustermap(dmr_met,
+                   method='ward',
+                   metric='euclidean',
+                   z_score=None,
+                   standard_scale=None,
+                   cmap='RdYlBu_r',
+                   xticklabels=False,
+                   yticklabels=False,
+                   col_colors=['#C0C0C0']*84 + ['#000000']*84,
+                   row_colors=row_colors_dmr)
+g.ax_heatmap.set_ylabel('')
 
 # Normalized CpG density to DMR annotation table
 dmr_info['Norm_CpGdensity'] = (dmr_info['CpGdensity'] - np.min(dmr_info['CpGdensity'])) / (np.max(dmr_info['CpGdensity']) - np.min(dmr_info['CpGdensity']))
@@ -127,13 +155,12 @@ print(stats.ttest_ind(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], 
 #Ttest_indResult(statistic=34.445773291849996, pvalue=1.1938040649902871e-228)
 
 # CpG density kdeplot between Hyper-DMR and Hypo-DMR
-ax = plt.subplot(1,1,1)
+fig, ax = plt.subplots(1,1, figsize=(7,7))
 sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], color='#6C8EAD', fill=True, ax=ax)
 sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], color='#A23E48', fill=True, ax=ax)
-ax.set_xlabel("Min-Max Normalized CpG Density of DMR")
-plt.xlim((0, 1))
-plt.ylim((0, 20))
-sns.despine()
+ax.set_xlim((0, 1))
+ax.set_ylim((0, 10))
+sns.despine(ax=ax)
 
 
 # DMR annotation colormap for sns.clustermap
@@ -154,3 +181,51 @@ g = sns.clustermap(dmr_met.loc[dmr_info2.index],
                    yticklabels=False,
                    cbar_kws={'label': 'DNA methylation'})
 g.cax.set_visible(False) # Legend removal
+
+
+
+# LOLA Functional Enrichment 
+input_dir="/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/Functional_Enrichment/LOLA/"
+lola_dmr = pd.read_table(f"{input_dir}LOLA_2_allEnrichments.tsv")
+
+
+
+
+
+
+
+# DMR UMAP Projection
+
+dmr_met_adata = sc.AnnData(dmr_met.T)
+
+# Percentage methylation stored on raw and layer attribute
+dmr_met_adata.raw = dmr_met_adata
+dmr_met_adata.layers['Percent_met'] = dmr_met_adata.X.copy()
+
+# clinic info attachment
+dmr_met_adata.obs = clinic_info.copy()
+
+# RNA batch info
+rna_batch = pd.read_table("/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/02.RNA-seq/GENCODE_V24/RNA_batch.txt", index_col=0)
+dmr_met_adata.obs['RNA_batch'] = rna_batch.copy()
+dmr_met_adata.obs['CIMP'] = cimp_pmd['CIMPtype']
+
+# Scaling (optional) and PCA
+sc.pp.scale(dmr_met_adata) # z-score scaling, which is (X-mean)/std. So the mean of the each variable becomes 0 (almost zero) and gets to have a unit variance.
+sc.tl.pca(dmr_met_adata, n_comps=83, zero_center=True) # zero_center=True => compute standard PCA from covariance matrix
+sc.pl.pca(dmr_met_adata, color=['TN', 'EpiBurden', 'CIMP'], add_outline=False, legend_loc='right margin', color_map=cmap, use_raw=True, annotate_var_explained=True, size=100, components=['1,2'])
+
+# Check for PCA numbers
+pca_variance = pd.DataFrame(dmr_met_adata.uns['pca']['variance_ratio'], index=list(map(lambda x: 'PC' + str(x), list(range(1,84)))), columns=['Variance_ratio'])
+np.sum(pca_variance.values.flatten()[:12])
+
+# Neighbor Graph construction and leiden community detection
+sc.pp.neighbors(dmr_met_adata, n_neighbors=10, n_pcs=9)
+sc.tl.umap(dmr_met_adata, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
+sc.pl.umap(dmr_met_adata, color=['TN', 'EpiBurden', 'CIMP'], add_outline=False, legend_loc='right margin', color_map=cmap)
+
+
+sc.tl.leiden(dmr_met_adata, resolution=0.75, key_added='leiden_r075')
+sc.tl.leiden(dmr_met_adata, resolution=0.5, key_added='leiden_r05')
+sc.tl.umap(dmr_met_adata, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
+sc.pl.umap(dmr_met_adata, color=['leiden_r075', 'leiden_r05', 'EpiBurden'], add_outline=False, legend_loc='right margin', color_map=cmap)
