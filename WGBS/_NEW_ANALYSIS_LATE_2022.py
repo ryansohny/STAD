@@ -92,6 +92,12 @@ ax.set_xlim((0, 75))
 ax.set_ylim((48, 83))
 sns.despine(ax=ax)
 
+g = sns.lmplot(data=cimp_pmd, x='CpGimet', y='PMDmet', hue='CIMPtype', palette={'Normal (N = 84)': 'darkblue', 'CIMP(-) tumor (N = 51)': 'salmon', 'CIMP(+) tumor (N=33)': 'maroon'})
+g.ax.set_xlabel('CIMP-CGI DNA methylation (%)')
+g.ax.set_ylabel('PMD DNA methylation (%)')
+g.ax.set_xlim((0, 75))
+g.ax.set_ylim((48, 83))
+g.ax.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper left', bbox_to_anchor=(0.01, 0.212), frameon=True, edgecolor='black', fancybox=False)
 
 # CIMP proportional plot
 #ax = (pd.crosstab(dmr_t.obs['DMR Clusters'], dmr_t.obs['CIMP'], normalize=0)*100).plot.bar(stacked=True, color=['#8b0000ff', '#000080ff'], rot=0)
@@ -187,6 +193,8 @@ g.cax.set_visible(False) # Legend removal
 # LOLA Functional Enrichment 
 input_dir="/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/Functional_Enrichment/LOLA/"
 lola_dmr = pd.read_table(f"{input_dir}LOLA_2_allEnrichments.tsv")
+lola_hyper_dmr = lola_dmr[lola_dmr['userSet'] == 1]
+lola_hypo_dmr = lola_dmr[lola_dmr['userSet'] == 2]
 
 
 
