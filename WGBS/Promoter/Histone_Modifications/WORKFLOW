@@ -1,0 +1,94 @@
+# 1. ENCODE defined cCREs bed 파일에서 PLS를 가지고 있는 애들을 모은 다음 sorting 한다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/_0.sh
+grep 'PLS' GRCh38-cCREs.bed > GRCh38-cCREs_PLS.bed
+bedtools sort -i GRCh38-cCREs_PLS.bed > GRCh38-cCREs_PLS_sorted.bed
+
+# 2. GENCODE version 24에서 basic tag를 가지고 있는 gene을 골라서 TSS 파일과 Genebody 파일을 만든다 (ex) TSS_basic_gencode.v24.alltranscripts_sorted.bed).
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/_00.make_TSS_n_Genebody_file_with_strand_GENCODE_basic.py
+
+# 3. (1)에서 만들어진 GRCh38-cCREs_PLS_sorted.bed를 merge 한다 (100bp 인근)
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/_1.sh
+bedtools merge -i GRCh38-cCREs_PLS_sorted.bed -d 100 -c 4 -o collapse > GRCh38-cCREs_PLS_sorted_100bp-merged.bed
+
+# 4. (3)에서 만들어진 GRCh38-cCREs_PLS_sorted_100bp-merged.bed 를 각각 100bp, 500bp씩 slopping 한다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS/_01.bedtools_slop.sh
+bedtools slop -i GRCh38-cCREs_PLS_sorted_100bp-merged.bed -g hg38.analysisSet_chrL.fa.fai -b 100 > GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop.bed
+bedtools slop -i GRCh38-cCREs_PLS_sorted_100bp-merged.bed -g hg38.analysisSet_chrL.fa.fai -b 500 > GRCh38-cCREs_PLS_sorted_100bp-merged_500bp_slop.bed
+
+# 5. Histone modification 디렉토리 (/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/Histone_modification_Stomach)에서 만들어진 각종 Histone Modification 파일을 (4)에서 만든 파일과 intersection한다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS
+# H3K4me3 w/ slop-PLS
+bedtools intersect -wao \
+-a GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop.bed \
+-b H3K4me3_ENCFF588TFE_q0.001_sorted.bed | grep -vf pattern.txt \
+> PLS_slop_intersect_H3K4me3_q0.001.bed
+
+# H3K4me1 w/ slop-PLS ####################### 500bp slop ##########################
+bedtools intersect -wao \
+-a GRCh38-cCREs_PLS_sorted_100bp-merged_500bp_slop.bed \
+-b H3K4me1_ENCFF712YGW_q0.001_sorted.bed | grep -vf pattern.txt \
+> PLS_slop_intersect_H3K4me1_q0.001.bed
+
+# H3K27ac w/ slop-PLS
+bedtools intersect -wao \
+-a GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop.bed \
+-b H3K27ac_ENCFF910HDI_q0.001_sorted.bed | grep -vf pattern.txt \
+> PLS_slop_intersect_H3K27ac_q0.001.bed
+
+# H3K27me3 w/ slop-PLS
+bedtools intersect -wao \
+-a GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop.bed \
+-b H3K27me3_ENCFF313RCC_q0.001_sorted.bed | grep -vf pattern.txt \
+> PLS_slop_intersect_H3K27me3_q0.001.bed
+
+# ATAC-seq w/ slop-PLS
+bedtools intersect -wao \
+-a GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop.bed \
+-b ATAC_ENCFF880EHI_q0.001_sorted_merged.bed | grep -vf pattern.txt \
+> PLS_slop_intersect_ATAC_q0.001.bed
+
+# CpGi w/ PLS
+bedtools intersect -wao \
+-a GRCh38-cCREs_PLS_sorted_100bp-merged.bed \
+-b CpGi_hg38_bedtools-sorted.bed | grep -vf pattern.txt \
+> PLS_intersect_CpGi.bed
+
+# 6. Intersection한 파일을 이용하여, GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop.bed 에다가 Histone modification 정보를 add-up하여, GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop_Annotated_q0.001.bed 를 만든다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS/_03.PLS_annotation.py
+
+# 7. PLS_annotated_table.txt를 만든다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS/_04.PLS_annotated_table_creation.py
+
+
+# 8. (6)에서 만든 GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop_Annotated_q0.001.bed와 (2)에서 만든 TSS_basic_gencode.v24.alltranscripts_sorted.bed를  intersection하여, Slopping된 ENCODE PLS에 걸리는 유전자만 솎아내어 cCRE_PLS_TSS_basic_gencode.v24_alltranscripts.bed 를 만든다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS/_05.intersect_cCREs_PLS_TSS.sh
+
+# 9. (8)에서 만든 cCRE_PLS_TSS_basic_gencode.v24_alltranscripts.bed를 살짝 modification하여 cCRE_PLS_TSS_basic_gencode.v24_alltranscripts_modified.bed를 만든다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS/_06.modify_intersected_cCREs_PLS_TSS.py
+
+# 10. (2)에서 만든 Genebody_basic_gencode.v24.alltranscripts_sorted.bed를 H3K36me3와 overlap하여서 H3K36me3 mark가 gene body에 있는 유전자를 골라낸다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/Histone_modification_Stomach/H3K36me3/_overlapping_new.sh
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/Histone_modification_Stomach/H3K36me3/H3K36me3_overlapped_genes_fulldescription_new.txt
+
+# 11. (9)에서 만든 cCRE_PLS_TSS_basic_gencode.v24_alltranscripts_modified.bed과 Genome 상에 존재하는 CpG 들을 intersection하는 과정을 통해 /mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/PLS_ALL.txt 파일을 만든다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/_03.methyl_percentage_extract_from_intersect_GENCODE_tag_basic.py
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/_04.DMRfile_creation_by_cut-paste-cat_2.py
+
+# 12. (7)에서 만든 PLS_annotated_table.txt과 (10)에서 만든 H3K36me3_overlapped_genes_fulldescription_new.txt과 (11)에서 만든 PLS_ALL.txt를 이용하여, 최종적인 PLS_annotated_table_full_new.txt를 만든다. 이때, THRA1/BTR 유전자는 제거한다. 또 CpGdensity도 새로 구한다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/PLS/_07.Full_PLS_annotation_table_with_H3K36me3.py
+
+###### PLS element가 없는 유전자의 경우 Processing 방식. 
+# 13. (2)에서 만든 TSS_basic_gencode.v24.alltranscripts_sorted.bed와 (6)에서 만든 GRCh38-cCREs_PLS_sorted_100bp-merged_100bp_slop_Annotated_q0.001.bed를 intersection했을 때 PLS element가 없는 유전자들을 고르고 특정 유전자들 (pseudogene, nonsense_mediated_decay) 등을 제거하여 No_cCREs_PLS_TSS.bed 를 만든다
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/No_PLS/_01.remove_cCREs_PLS_intersected_TSS.sh
+
+# 14. (13)에서 만든 No_cCREs_PLS_TSS.bed에 ID를 달아준다 (NoPLS_#). 그리고 해당 TSS의 경우 1bp coordinate이므로 양 옆으로 500bp씩 slopping해준다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/No_PLS/_02.modify_file.py
+
+# 15. (14)에서 만든 No_cCREs_PLS_TSS_modified_500bp-slop.bed와 Histone modification 디렉토리 (/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/Histone_modification_Stomach)에서 만들어진 각종 Histone Modification 파일들을 intersection한다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/No_PLS/_03.intersect_No-PLS_with_Epigenetic_signatures.sh
+
+# 16. (15)에서 만들어진 intersection파일들을 이용하여 No_cCREs_PLS_TSS_modified_500bp-slop_Annotated.bed를 만든다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/No_PLS/_04.No_PLS_annotation.py
+
+# 17. (16)의 No_cCREs_PLS_TSS_modified_500bp-slop_Annotated.bed와 14002_N_WCmerged.bed (전체 CpG의 위치)를 intersection한 뒤에, CpG가 없는 유전자들을 제거한다. 그 이후, (10)에서 만든 H3K36me3_overlapped_genes_fulldescription_new.txt의 정보를 더한다.
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/No_PLS/_05.PLS_annotated_table_creation.py
