@@ -92,3 +92,17 @@ bedtools intersect -wao \
 
 # 17. (16)의 No_cCREs_PLS_TSS_modified_500bp-slop_Annotated.bed와 14002_N_WCmerged.bed (전체 CpG의 위치)를 intersection한 뒤에, CpG가 없는 유전자들을 제거한다. 그 이후, (10)에서 만든 H3K36me3_overlapped_genes_fulldescription_new.txt의 정보를 더한다.
 ##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/No_PLS/_05.PLS_annotated_table_creation.py
+
+
+##### Redundant gene removal #####
+# 18. (12)에서 만든 PLS_annotated_table_full_new.txt에는 문제가 있다. 바로 Promoter가 두 개로 assignment된 유전자가 있는 것인데 아래의 코드에서와 같이, 중복된 유전자의 경우 그 TSS와 두 개의 Promoter의 중심부에서 거리를 비교하여, 가까운 Promoter element를 고른다 (No_PLS에서는 promoter 두 개인 유전자 없음)
+##/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/MERGED_PLS_No_PLS/_redundant_id_removal.py
+
+### DMR overlapped PLS and No_PLS
+# 19. DMR과 겹치는 PLS, No_PLS찾기 위해서 PLS와 No_PLS를 각각 양 옆으로 500bp씩 늘린 뒤 DMR과 overlap시킴 (여기서 PMD DMR을 제거하면?)
+###/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/MERGED_PLS_No_PLS/_DMR_overlapped_PLS_finding.py
+
+- DMR과 겹치는 PLS, No_PLS찾으려고 이미 slopping된 promoter를 더 늘렸음 (500bp씩) 이거 괜찮은가?
+- 그리고 DMR에서 PMD DMR을 제거하면? (/mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/Promoter_methylation/Gencode_V24/ENCODE/GENCODE_tag_basic/Annotation_NEW/MERGED_PLS_No_PLS/DMR_NoPMD_Overlapped_PLS_and_No_PLS)
+
+- /mnt/mone/Project/WC300/03.WGBS_New/02.DNA_methylation/metilene/DMR/DMR_min55_new/LOLA/_make_DMR_wo_PMD.sh
