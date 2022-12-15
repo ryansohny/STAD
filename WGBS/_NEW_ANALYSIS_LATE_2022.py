@@ -346,6 +346,25 @@ total5 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['
 total6 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'Yes')].index)]
 total7 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'na')].index)]
 
+total1 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') & (comb_plsdmr_info['K27ac'] == 'Yes') & (comb_plsdmr_info['K27me3'] == 'Yes') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+total2 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') & (comb_plsdmr_info['K27ac'] == 'Yes') & (comb_plsdmr_info['K27me3'] == 'na') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+total3 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'Yes') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+total4 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'Yes') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'na') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+total5 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'Yes') & (comb_plsdmr_info['K27me3'] == 'na') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+total6 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'Yes') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+total7 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'na') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
+
+mean_total1 = pd.DataFrame({'AverageMet': total1.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27ac/H3K27me3']*total1.shape[0]}, index=total1.index)
+mean_total2 = pd.DataFrame({'AverageMet': total2.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27ac']*total2.shape[0]}, index=total2.index)
+mean_total3 = pd.DataFrame({'AverageMet': total3.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27me3']*total3.shape[0]}, index=total3.index)
+mean_total4 = pd.DataFrame({'AverageMet': total4.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3']*total4.shape[0]}, index=total4.index)
+mean_total5 = pd.DataFrame({'AverageMet': total5.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K27ac']*total5.shape[0]}, index=total5.index)
+mean_total6 = pd.DataFrame({'AverageMet': total6.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K27me3']*total6.shape[0]}, index=total6.index)
+mean_total7 = pd.DataFrame({'AverageMet': total7.iloc[:, :84].mean(axis=1).values, 'Type': ['NA']*total7.shape[0]}, index=total7.index)
+
+mean_total = pd.concat([mean_total1, mean_total2, mean_total3, mean_total4, mean_total5, mean_total6, mean_total7], axis=0)
+
+
 # RNA (transcript) expression distribution plot version 1
 p = sns.histplot( trans_combat_log2.iloc[:, :84].sum(axis=1).div(84)[trans_combat_log2.iloc[:, :84].sum(axis=1).div(84).index.isin( list(set(comb_plsdmr_info[comb_plsdmr_info.index.isin(total1.index)]['ENSTID'].values)) )], kde=True, stat='count', color=sns.color_palette("Accent", 7)[0])
 p = sns.histplot( trans_combat_log2.iloc[:, :84].sum(axis=1).div(84)[trans_combat_log2.iloc[:, :84].sum(axis=1).div(84).index.isin( list(set(comb_plsdmr_info[comb_plsdmr_info.index.isin(total2.index)]['ENSTID'].values)) )], kde=True, stat='count', color=sns.color_palette("Accent", 7)[1])
@@ -379,13 +398,13 @@ sns.despine(ax=ax)
 
 
 # Promoter methylation distribution plot version 1
-p = sns.histplot(total1.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[0])
-p = sns.histplot(total2.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[1])
-p = sns.histplot(total3.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[2])
-p = sns.histplot(total4.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[3])
-p = sns.histplot(total5.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[4])
-p = sns.histplot(total6.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[5])
-p = sns.histplot(total7.iloc[:, :84].mean(axis=1)*100, kde=True, stat='density', color=sns.color_palette("Accent", 7)[6])
+p = sns.histplot(total1.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[0])
+p = sns.histplot(total2.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[1])
+p = sns.histplot(total3.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[2])
+p = sns.histplot(total4.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[3])
+p = sns.histplot(total5.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[4])
+p = sns.histplot(total6.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[5])
+p = sns.histplot(total7.iloc[:, :84].mean(axis=1), kde=True, stat='count', color=sns.color_palette("Accent", 7)[6])
 plt.xlim((0, 100))
 sns.despine()
 p.set_xlabel("Mean Promoter DNA Methylation (%) across normal samples")
@@ -399,13 +418,13 @@ p.yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
 
 # Promoter methylation distribution plot version 2
 ax = plt.subplot(1,1,1)
-sns.kdeplot(total1.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[0], ax=ax)
-sns.kdeplot(total2.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[1], ax=ax)
-sns.kdeplot(total3.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[2], ax=ax)
-sns.kdeplot(total4.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[3], ax=ax)
-sns.kdeplot(total5.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[4], ax=ax)
-sns.kdeplot(total6.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[5], ax=ax)
-sns.kdeplot(total7.iloc[:, :84].mean(axis=1)*100, color=sns.color_palette("Accent", 7)[6], ax=ax)
+sns.kdeplot(total1.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[0], ax=ax)
+sns.kdeplot(total2.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[1], ax=ax)
+sns.kdeplot(total3.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[2], ax=ax)
+sns.kdeplot(total4.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[3], ax=ax)
+sns.kdeplot(total5.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[4], ax=ax)
+sns.kdeplot(total6.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[5], ax=ax)
+sns.kdeplot(total7.iloc[:, :84].mean(axis=1), color=sns.color_palette("Accent", 7)[6], ax=ax)
 plt.xlim((0, 100))
 ax.set_xlabel("Mean Promoter DNA Methylation (%) across normal samples")
 sns.despine()
