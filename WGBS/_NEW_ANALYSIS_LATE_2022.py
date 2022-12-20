@@ -66,7 +66,7 @@ g = sns.clustermap(cpgi_pls_tn_met,
                    xticklabels=False,
                    yticklabels=False,
                    col_colors=None)
-
+g.ax_heatmap.set_ylabel('')
 
 cimp_positive_samples = list(cpgi_pls_tn_met.iloc[:, g.dendrogram_col.reordered_ind[:33]].columns) # (i)
 #cimp_positive_samples = list(cpgi_pls_tn_met.iloc[:, g.dendrogram_col.reordered_ind[:32]].columns) # (i)
