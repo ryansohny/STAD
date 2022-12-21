@@ -193,12 +193,14 @@ g.cax.set_visible(False) # Legend removal
 # LOLA Functional Enrichment 
 input_dir="/mnt/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/03.WGBS/NEW/Functional_Enrichment/LOLA/"
 lola_dmr = pd.read_table(f"{input_dir}LOLA_2_allEnrichments.tsv")
-lola_hyper_dmr = lola_dmr[lola_dmr['userSet'] == 1]
-lola_hypo_dmr = lola_dmr[lola_dmr['userSet'] == 2]
+lola_hyper_dmr = lola_dmr[(lola_dmr['userSet'] == 1) & (lola_dmr['collection'] == 'encode_tfbs')]
+lola_hypo_dmr = lola_dmr[(lola_dmr['userSet'] == 2) & (lola_dmr['collection'] == 'encode_tfbs')]
+
+lola_hyper_dmr['Antibody from ENCODE'] = lola_hyper_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
+lola_hypo_dmr['Antibody from ENCODE'] = lola_hypo_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
 
 
-
-
+lola_hypo_dmr[['antibody', 'cellType', 'treatment']].apply(lambda x: ', '.join(x), axis=1)
 
 
 
