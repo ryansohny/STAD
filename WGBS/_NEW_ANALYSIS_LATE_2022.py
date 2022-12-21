@@ -202,7 +202,7 @@ lola_hypo_dmr['Antibody from ENCODE'] = lola_hypo_dmr[['antibody', 'cellType']].
 
 lola_hypo_dmr[['antibody', 'cellType', 'treatment']].apply(lambda x: ', '.join(x), axis=1)
 
-
+sns.scatterplot(data=test.sort_values(by='pValueLog', ascending=False), x="pValueLog", y="Antibody from ENCODE", hue='pValueLog', size="oddsRatio", style='userSet', sizes=(20,200))
 
 # DMR UMAP Projection
 
