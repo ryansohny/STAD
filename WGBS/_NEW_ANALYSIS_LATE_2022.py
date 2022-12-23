@@ -166,7 +166,14 @@ sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], color='#6C8
 sns.kdeplot(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], color='#A23E48', fill=True, ax=ax)
 ax.set_xlim((0, 1))
 ax.set_ylim((0, 10))
+ax.set_xlabel("Min-Max Normalized CpG Density of DMR")
 sns.despine(ax=ax)
+
+# CpG density histplot between Hyper-DMR and Hypo-DMR - ver2
+fig, ax = plt.subplots(1, 1, figsize=(7, 7))
+sns.histplot(dmr_info[dmr_info['Type'] == 'Hypo']['Norm_CpGdensity'], kde=True, stat='count', color='#6C8EAD', ax=ax)
+sns.histplot(dmr_info[dmr_info['Type'] == 'Hyper']['Norm_CpGdensity'], kde=True, stat='count', color='#A23E48', ax=ax)
+ax.set_xlim((0, 1))
 
 
 # DMR annotation colormap for sns.clustermap
@@ -196,17 +203,14 @@ lola_dmr = pd.read_table(f"{input_dir}LOLA_2_allEnrichments.tsv")
 lola_hyper_dmr = lola_dmr[(lola_dmr['userSet'] == 1) & (lola_dmr['collection'] == 'encode_tfbs')]
 lola_hypo_dmr = lola_dmr[(lola_dmr['userSet'] == 2) & (lola_dmr['collection'] == 'encode_tfbs')]
 
-lola_hyper_dmr['Antibody from ENCODE'] = lola_hyper_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
-lola_hypo_dmr['Antibody from ENCODE'] = lola_hypo_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
+lola_hyper_dmr['Antibody from ENCODE cell type'] = lola_hyper_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
+lola_hypo_dmr['Antibody from ENCODE cell type'] = lola_hypo_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
 
 
 lola_hypo_dmr[['antibody', 'cellType', 'treatment']].apply(lambda x: ', '.join(x), axis=1)
 test = pd.concat([lola_hyper_dmr.iloc[:10, :], lola_hypo_dmr.iloc[:10, :]])
-sns.scatterplot(data=test.sort_values(by='pValueLog', ascending=False), x="pValueLog", y="Antibody from ENCODE cell type", hue='pValueLog', size="oddsRatio", style='userSet', sizes=(20,200))
-plt.tight_layout()
-
-
-
+fig, ax = plt.subplots(1, 1, figsize=(10,6), constrained_layout=True)
+sns.scatterplot(data=test.sort_values(by='pValueLog', ascending=False), x="pValueLog", y="Antibody from ENCODE cell type", hue='pValueLog', size="oddsRatio", style='userSet', sizes=(20,200), ax=ax)
 
 
 
