@@ -207,7 +207,7 @@ lola_hyper_dmr['Antibody from ENCODE cell type'] = lola_hyper_dmr[['antibody', '
 lola_hypo_dmr['Antibody from ENCODE cell type'] = lola_hypo_dmr[['antibody', 'cellType']].apply(lambda x: ' from '.join(x), axis=1)
 
 
-lola_hypo_dmr[['antibody', 'cellType', 'treatment']].apply(lambda x: ', '.join(x), axis=1)
+lola_hypo_dmr.loc[:, ('antibody', 'cellType', 'treatment')].apply(lambda x: ', '.join(x), axis=1)
 test = pd.concat([lola_hyper_dmr.iloc[:10, :], lola_hypo_dmr.iloc[:10, :]])
 fig, ax = plt.subplots(1, 1, figsize=(10,6), constrained_layout=True)
 sns.scatterplot(data=test.sort_values(by='pValueLog', ascending=False), x="pValueLog", y="Antibody from ENCODE cell type", hue='pValueLog', size="oddsRatio", style='userSet', sizes=(20,200), ax=ax)
