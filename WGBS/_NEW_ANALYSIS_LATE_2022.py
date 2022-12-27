@@ -19,12 +19,24 @@ cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffd
 
 clinic_info = pd.read_csv('/data/Projects/phenomata/01.Projects/08.StomachCancer_backup/2022_WC300_clinical_information_Xadded_ver2.0.csv', index_col='Sample')
 
-# Average methylation for Tumor vs Normal (Figure 1)
+pmd_frac = pd.read_table('PMD_fraction.txt', index_col=0)
+pmd_frac.index = list(map(lambda x: 'X'+x, pmd_frac.index))
+clinic_info['PMD_Fraction'] = pmd_frac['PMD_Fraction'].copy()
+
+# Average methylation for Tumor vs Normal (Figure 1A)
 p = sns.violinplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], palette={'PercentMet_COV5_Normal':'midnightblue', 'PercentMet_COV5_Tumor':'darkred'}, cut=0, scale="area")
 p = sns.stripplot(data=clinic_info.iloc[84:][['PercentMet_COV5_Normal', 'PercentMet_COV5_Tumor']], color="black")
 p.set_xticklabels(['Normal (N=84)', 'Tumor (N=84)'])
 p.set_ylabel("Average methylation (%)")
 sns.despine()
+
+# PMD Fraction for Tumor vs Normal (Figure 1B)
+p = sns.violinplot(data=clinic_info, x='TN', y='PMD_Fraction', palette={'Normal':'midnightblue', 'Tumor':'darkred'}, cut=0, scale="width")
+p = sns.stripplot(data=clinic_info, x='TN', y='PMD_Fraction', color="black")
+p.set_xticklabels(['Normal (N=84)', 'Tumor (N=84)'])
+p.set_ylabel("Fraction of PMDs in the Genome")
+sns.despine()
+
 
 # Partially Methylated Domains (PMDs)
 pmd_met = pd.read_table("PMD_ALL.txt", index_col=0)
@@ -368,8 +380,8 @@ total5 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['
 total6 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'Yes') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
 total7 = comb_plsdmr[comb_plsdmr.index.isin(comb_plsdmr_info[(comb_plsdmr_info['K4me3'] == 'na') & (comb_plsdmr_info['K27ac'] == 'na') & (comb_plsdmr_info['K27me3'] == 'na') & (comb_plsdmr_info['Type'] == 'protein_coding')].index)]
 
-mean_total1 = pd.DataFrame({'AverageMet': total1.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27ac/H3K27me3']*total1.shape[0]}, index=total1.index)
-mean_total2 = pd.DataFrame({'AverageMet': total2.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27ac']*total2.shape[0]}, index=total2.index)
+mean_total1 = pd.DataFrame({'AverageMet': total2.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27ac']*total2.shape[0]}, index=total2.index)
+mean_total2 = pd.DataFrame({'AverageMet': total1.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27ac/H3K27me3']*total1.shape[0]}, index=total1.index)
 mean_total3 = pd.DataFrame({'AverageMet': total3.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3/H3K27me3']*total3.shape[0]}, index=total3.index)
 mean_total4 = pd.DataFrame({'AverageMet': total4.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K4me3']*total4.shape[0]}, index=total4.index)
 mean_total5 = pd.DataFrame({'AverageMet': total5.iloc[:, :84].mean(axis=1).values, 'Type': ['H3K27ac']*total5.shape[0]}, index=total5.index)
@@ -377,6 +389,26 @@ mean_total6 = pd.DataFrame({'AverageMet': total6.iloc[:, :84].mean(axis=1).value
 mean_total7 = pd.DataFrame({'AverageMet': total7.iloc[:, :84].mean(axis=1).values, 'Type': ['NA']*total7.shape[0]}, index=total7.index)
 
 mean_total = pd.concat([mean_total1, mean_total2, mean_total3, mean_total4, mean_total5, mean_total6, mean_total7], axis=0)
+
+# Ridgeline plots
+def label(x, color, label):
+    ax = plt.gca()
+    ax.text(0.85, 0.18, label, color='black', fontsize=13, ha='left', va='center', transform=ax.transAxes)
+
+sns.set_theme(style="white", font="Arial", rc={"axes.facecolor": (0, 0, 0, 0)})
+grid = sns.FacetGrid(mean_total, row="Type", hue="Type", palette=sns.color_palette("Accent", 7), aspect=9, height=1.2)
+grid.map_dataframe(sns.kdeplot, x="AverageMet", fill=True, alpha=1)
+grid.map_dataframe(sns.kdeplot, x="AverageMet", color='black')
+grid.set(xlim=(0, 100))
+grid.fig.subplots_adjust(hspace=-0.78)
+grid.set_titles("")
+grid.set(yticks=[])
+grid.set_axis_labels("", "")
+grid.despine(left=True)
+grid.figure.suptitle("Seven Different Combinations of Histone modifications", size=20)
+grid.figure.supylabel('Kernel Density', x=0.045, y=0.5)
+grid.figure.supxlabel("Average Promoter DNA Methylation (%)")
+grid.figure.subplots_adjust(top=1.01)
 
 
 # RNA (transcript) expression distribution plot version 1
@@ -445,3 +477,6 @@ sns.despine()
 plt.tight_layout()
 
 
+
+
+sns.heatmap(pd.concat([pd.DataFrame(comb_plsdmr[comb_plsdmr_info['GeneID'] == 'GPR25'].iloc[:, :84].values), pd.DataFrame(comb_plsdmr[comb_plsdmr_info['GeneID'] ='GPR25'].iloc[:, 84:].values)], axis=0), cmap=cmap, xticklabels=False, yticklabels=False)
